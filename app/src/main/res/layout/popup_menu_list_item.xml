@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/popup_menu_background"
+        android:orientation="vertical">
+
+    <TextView
+            android:id="@+id/menu_rename"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="重命名"
+            android:textColor="#222"
+            android:background="?android:attr/selectableItemBackground" />
+
+    <TextView
+            android:id="@+id/menu_delete"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="删除"
+            android:textColor="#E53935"
+            android:background="?android:attr/selectableItemBackground" />
+</LinearLayout>

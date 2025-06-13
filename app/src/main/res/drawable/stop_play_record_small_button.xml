@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape>
+            <size android:width="30dp" android:height="30dp"/>
+            <solid android:color="@color/light_red" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+    <item android:drawable="@drawable/stop_play_record"
+            android:gravity="center"
+            android:width="25dp"
+            android:height="25dp"/>
+</layer-list>

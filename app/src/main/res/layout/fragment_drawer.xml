@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+    <LinearLayout
+            android:id="@+id/fragment_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/user_avatar"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:shapeAppearance="@style/Circle"
+                android:src="@drawable/ic_user_avatar" />
+        <TextView
+                android:id="@+id/username"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:textSize="20sp"
+                android:text="未登录"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:paddingHorizontal="12dp" />
+    </LinearLayout>
+
+
+
+
+    <TextView
+            android:id="@+id/conversations_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="对话记录"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/dark_gray"
+            android:textSize="15sp"
+            android:padding="8dp" />
+
+    <ListView
+            android:id="@+id/conversations_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:dividerHeight="1dp" />
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+    </ScrollView>
+
+</LinearLayout>

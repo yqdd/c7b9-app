@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">属七降九</string>
+    <string name="server">http://192.168.188.11:8080/Gradle___com_ow0b___c7b9_server_1_0_SNAPSHOT_war/</string>
+</resources>
