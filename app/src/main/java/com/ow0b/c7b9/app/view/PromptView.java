@@ -21,7 +21,7 @@ public class PromptView extends ConstraintLayout
         ((MarginLayoutParams) getLayoutParams()).bottomMargin = ParaType.toDP(this, 10);
 
         TextView textView = new TextView(context);
-        textView.setBackground(getResources().getDrawable(R.drawable.chat_background));
+        textView.setBackground(getResources().getDrawable(R.drawable.bg_chat));
         textView.setText(text);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
         textView.setTextIsSelectable(true);

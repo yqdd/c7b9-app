@@ -14,7 +14,7 @@ public class ToolSelectionActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tool_selection);
+        setContentView(R.layout.activity_tool);
 
         pianoToolButton = findViewById(R.id.piano_tool_button);
         leaderboardToolButton = findViewById(R.id.leaderboard_tool_button);

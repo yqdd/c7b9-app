@@ -36,7 +36,7 @@ public class LeaderboardAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.user_stats_item, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_user_stats, parent, false);
         }
 
         TextView userName = convertView.findViewById(R.id.user_name);

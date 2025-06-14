@@ -86,13 +86,13 @@ public class PromptRecordView extends ConstraintLayout
         public Inside(Activity activity)
         {
             super(activity);
-            setBackground(getResources().getDrawable(R.drawable.chat_record_background));
+            setBackground(getResources().getDrawable(R.drawable.bg_chat_record));
             setOrientation(HORIZONTAL);
             setGravity(Gravity.CENTER_VERTICAL);
             int padding1 = ParaType.toDP(this, 8), padding2 = ParaType.toDP(this, 10);
 
             playButton = new ImageButton(activity);
-            playButton.setImageResource(R.drawable.play_record_small_button);
+            playButton.setImageResource(R.drawable.btn_play_record_small);
             playButton.setBackgroundColor(getResources().getColor(R.color.empty));
             playButton.setPadding(padding1, padding2, padding1, padding2);
             playButton.setOnClickListener(v ->
@@ -205,7 +205,7 @@ public class PromptRecordView extends ConstraintLayout
                     }
                 }, 10, 10);
 
-                playButton.setImageResource(R.drawable.stop_play_record_small_button);
+                playButton.setImageResource(R.drawable.btn_stop_play_record_small);
             }
             catch (IOException e)
             {
@@ -220,7 +220,7 @@ public class PromptRecordView extends ConstraintLayout
             {
                 mediaPlayer.stop();
                 mediaPlayer.release();
-                playButton.setImageResource(R.drawable.play_record_small_button);
+                playButton.setImageResource(R.drawable.btn_play_record_small);
                 textView.setText("00:00");
             }
             timer = null;

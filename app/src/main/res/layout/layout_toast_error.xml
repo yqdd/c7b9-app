@@ -4,7 +4,7 @@
         android:orientation="horizontal"
         android:paddingHorizontal="15dp"
         android:paddingVertical="8dp"
-        android:background="@drawable/toast_error_background"
+        android:background="@drawable/bg_toast_error"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 

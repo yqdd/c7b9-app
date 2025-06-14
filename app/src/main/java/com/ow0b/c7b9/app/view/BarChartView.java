@@ -2,7 +2,6 @@ package com.ow0b.c7b9.app.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.util.AttributeSet;
@@ -41,7 +40,7 @@ public class BarChartView extends View
         layout.bottomMargin = ParaType.toDP(frame, 10);
         layout.leftMargin = ParaType.toDP(frame, 10);
         frame.setLayoutParams(layout);
-        frame.setBackground(frame.getResources().getDrawable(R.drawable.chart_background));
+        frame.setBackground(frame.getResources().getDrawable(R.drawable.bg_chart_gray));
 
         int padding = ParaType.toDP(frame, 10);
         frame.setPadding(padding, padding, padding, padding);

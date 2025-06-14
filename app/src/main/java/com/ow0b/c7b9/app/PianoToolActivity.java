@@ -18,7 +18,7 @@ public class PianoToolActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_piano_tool);
+        setContentView(R.layout.activity_tool_piano);
 
         pianoKeysContainer = findViewById(R.id.piano_keys_container);
         soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);

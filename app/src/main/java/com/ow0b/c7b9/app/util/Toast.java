@@ -19,8 +19,8 @@ public class Toast
         LayoutInflater inflater = LayoutInflater.from(context);
         View layout = switch (type)
         {
-            case INFO -> inflater.inflate(R.layout.toast_info_layout, null);
-            case ERROR -> inflater.inflate(R.layout.toast_error_layout, null);
+            case INFO -> inflater.inflate(R.layout.layout_toast_info, null);
+            case ERROR -> inflater.inflate(R.layout.layout_toast_error, null);
         };
 
         TextView text = layout.findViewById(R.id.toast_text);

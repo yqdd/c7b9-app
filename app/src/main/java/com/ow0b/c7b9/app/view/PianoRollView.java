@@ -10,7 +10,6 @@ import android.view.ScaleGestureDetector;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.OverScroller;
 import android.widget.TextView;
@@ -63,7 +62,7 @@ public class PianoRollView extends View implements RecordBackground
         LinearLayout layout = new LinearLayout(context);
         int dp10 = ParaType.toDP(layout, 10);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setBackground(context.getDrawable(instance.colorRed ? R.drawable.chart_background_red : R.drawable.chart_background));
+        layout.setBackground(context.getDrawable(instance.colorRed ? R.drawable.bg_chart_red : R.drawable.bg_chart_gray));
         layout.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT)

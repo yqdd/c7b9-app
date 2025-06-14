@@ -41,7 +41,7 @@ public class ConversationsAdapter extends BaseAdapter
     public View getView(int position, View convertView, ViewGroup parent)
     {
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.conversation_item, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.item_conversation, parent, false);
         }
 
         TextView userMessage = convertView.findViewById(R.id.user_message);

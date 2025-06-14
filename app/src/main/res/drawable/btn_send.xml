@@ -4,11 +4,11 @@
         <shape>
             <size android:width="60dp" android:height="60dp"/>
             <padding android:left="10dp" android:right="10dp"/>
-            <solid android:color="@color/red" />
+            <solid android:color="@color/black" />
             <corners android:radius="40dp" />
         </shape>
     </item>
-    <item android:drawable="@drawable/start_record"
+    <item android:drawable="@drawable/img_send_arrow"
             android:gravity="center"
             android:width="40dp"
             android:height="40dp"/>

@@ -10,7 +10,6 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -29,21 +28,15 @@ import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.ow0b.c7b9.app.util.ApiCallback;
 import com.ow0b.c7b9.app.util.ApiClient;
-import com.ow0b.c7b9.app.util.ParaType;
 import com.ow0b.c7b9.app.util.Toast;
-import com.ow0b.c7b9.app.util.midi.Midi;
 import com.ow0b.c7b9.app.view.AnalyzeView;
-import com.ow0b.c7b9.app.view.BarChartView;
 import com.ow0b.c7b9.app.view.ExpandableLayout;
-import com.ow0b.c7b9.app.view.LineChartView;
-import com.ow0b.c7b9.app.view.PianoRollView;
 import com.ow0b.c7b9.app.view.PromptRecordView;
 import com.ow0b.c7b9.app.view.PromptView;
 import com.ow0b.c7b9.app.view.ResponseView;
@@ -57,14 +50,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Consumer;
@@ -196,12 +184,12 @@ public class MainActivity extends AppCompatActivity
             if (isRecording)
             {
                 stopRecording();
-                recordAudioButton.setImageResource(R.drawable.start_record_button);
+                recordAudioButton.setImageResource(R.drawable.btn_start_record);
             }
             else
             {
                 startRecording();
-                recordAudioButton.setImageResource(R.drawable.stop_record_button);
+                recordAudioButton.setImageResource(R.drawable.btn_stop_record);
             }
         });
         updateSwitchButtonState(audioLLMButton, true);
@@ -488,6 +476,7 @@ public class MainActivity extends AppCompatActivity
                                 });
                             }
                         }
+                        isNewChat = true;
                     }
                     @Override
                     public void onFailure(@NonNull Call call, @NonNull IOException e)
@@ -544,7 +533,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }, 10, 10);
 
-            playAudioButton.setImageResource(R.drawable.stop_play_record_button);
+            playAudioButton.setImageResource(R.drawable.btn_stop_play_record);
         }
         catch (IOException e)
         {
@@ -558,7 +547,7 @@ public class MainActivity extends AppCompatActivity
         {
             mediaPlayer.stop();
             mediaPlayer.release();
-            playAudioButton.setImageResource(R.drawable.play_record_button);
+            playAudioButton.setImageResource(R.drawable.btn_play_record);
         }
         mediaPlayerTimer = null;
         mediaPlayer = null;

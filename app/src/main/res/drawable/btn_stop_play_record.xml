@@ -8,7 +8,7 @@
             <corners android:radius="40dp" />
         </shape>
     </item>
-    <item android:drawable="@drawable/stop_play_record"
+    <item android:drawable="@drawable/img_stop_play_record"
             android:gravity="center"
             android:width="45dp"
             android:height="45dp"/>

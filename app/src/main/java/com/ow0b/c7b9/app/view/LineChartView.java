@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -42,7 +41,7 @@ public class LineChartView extends View implements RecordBackground
         FrameLayout frame = new FrameLayout(context);
         int dp10 = ParaType.toDP(frame, 10);
 
-        frame.setBackground(context.getDrawable(R.drawable.chart_background));
+        frame.setBackground(context.getDrawable(R.drawable.bg_chart_gray));
         frame.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ParaType.toDP(frame, 70))

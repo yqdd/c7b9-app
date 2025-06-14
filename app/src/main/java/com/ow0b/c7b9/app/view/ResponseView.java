@@ -125,7 +125,7 @@ public class ResponseView extends LinearLayout
                     (textView.getPaddingLeft(), textView.getPaddingTop(),
                     textView.getPaddingRight(), textView.getPaddingBottom());
             setLayoutParams(layout);
-            setBackground(getResources().getDrawable(R.drawable.chat_background));
+            setBackground(getResources().getDrawable(R.drawable.bg_chat));
             setOrientation(VERTICAL);
 
             int padding = ParaType.toDP(this, 5), padding2 = ParaType.toDP(this, 10);

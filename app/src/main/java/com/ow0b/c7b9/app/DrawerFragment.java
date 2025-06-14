@@ -3,7 +3,6 @@ package com.ow0b.c7b9.app;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -14,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -138,7 +136,7 @@ public class DrawerFragment extends Fragment
 
     private void showPopupMenu(View anchorView, int id)
     {
-        View popupView = LayoutInflater.from(getContext()).inflate(R.layout.popup_menu_list_item, null);
+        View popupView = LayoutInflater.from(getContext()).inflate(R.layout.layout_popupmenu, null);
         int width = (int) (getResources().getDisplayMetrics().density * 120 + 0.5f);
         int height = ViewGroup.LayoutParams.WRAP_CONTENT;
         PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);

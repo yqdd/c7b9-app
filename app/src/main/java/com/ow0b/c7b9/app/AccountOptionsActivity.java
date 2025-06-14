@@ -10,7 +10,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.Toast;
 
-public class AccountOptionsActivity extends AppCompatActivity {
+public class AccountOptionsActivity extends AppCompatActivity
+{
 
     private SharedPreferences sharedPreferences;
     private Button changeUsernameButton;
