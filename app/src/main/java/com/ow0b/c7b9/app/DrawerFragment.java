@@ -140,7 +140,6 @@ public class DrawerFragment extends Fragment
         int width = (int) (getResources().getDisplayMetrics().density * 120 + 0.5f);
         int height = ViewGroup.LayoutParams.WRAP_CONTENT;
         PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
-        popupWindow.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.black_background)));
         popupWindow.setOutsideTouchable(true);
 
         TextView rename = popupView.findViewById(R.id.menu_rename);
@@ -203,7 +202,7 @@ public class DrawerFragment extends Fragment
                         body.add(unit);
                         ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "api/conversation")
                                 .parameter("id", String.valueOf(id))
-                                .method("PUT", body)
+                                .method("PATCH", body)
                                 .callback(new ApiCallback(getActivity())
                                 {
                                     @Override

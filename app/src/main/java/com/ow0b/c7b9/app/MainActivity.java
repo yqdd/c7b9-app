@@ -53,6 +53,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Consumer;
@@ -323,6 +324,24 @@ public class MainActivity extends AppCompatActivity
                         {
                             throw new RuntimeException(e);
                         }
+                        //加载完前文后再加载没有生成完的内容
+                        ApiClient.getInstance(MainActivity.this).url(getResources().getString(R.string.server) + "api/context/reconnect")
+                                .parameter("id", String.valueOf(id))
+                                .get()
+                                .callback(new Callback()
+                                {
+                                    @Override
+                                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException
+                                    {
+                                        if(response.code() == 200) sendMessageResponse(response.body().source());
+                                    }
+                                    @Override
+                                    public void onFailure(@NonNull Call call, @NonNull IOException e)
+                                    {
+                                        Toast.showError(MainActivity.this, "连接服务器失败，请稍后再试");
+                                    }
+                                })
+                                .enqueue();
                     }
                 })
                 .enqueue();
@@ -394,27 +413,6 @@ public class MainActivity extends AppCompatActivity
     }
     private void sendMessageToAI(String message, int audioId)
     {
-        AnalyzeView analyzeView = new AnalyzeView(this);
-        chatDisplay.addView(analyzeView);
-
-        ResponseView audioView = new ResponseView(this, "", true),
-                reasoningView = new ResponseView(this, "", true),
-                responseView = new ResponseView(this);
-        ExpandableLayout audioExpandable = new ExpandableLayout(this)
-        {{
-            setHeaderText("音频理解（QWEN）");
-            addComponent(audioView);
-        }}, reasoningExpandable = new ExpandableLayout(this)
-        {{
-            setHeaderText("深度思考");
-            addComponent(reasoningView);
-        }};
-        audioExpandable.setVisibility(View.GONE);
-        reasoningExpandable.setVisibility(View.GONE);
-        chatDisplay.addView(audioExpandable);
-        chatDisplay.addView(reasoningExpandable);
-        chatDisplay.addView(responseView);
-
         JsonObject json = new JsonObject();
         json.addProperty("message", message);
         if(audioId != -1) json.addProperty("audioId", audioId);
@@ -428,54 +426,7 @@ public class MainActivity extends AppCompatActivity
                     public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException
                     {
                         BufferedSource source = response.body().source();
-                        StringBuilder contentBuilder = new StringBuilder(),
-                                reasoningBuilder = new StringBuilder(),
-                                audioBuilder = new StringBuilder();
-                        while(!source.exhausted())
-                        {
-                            String line = source.readUtf8Line();
-                            Log.i("TAG", "onResponse: " + line);
-                            runOnUiThread(() -> ApiClient.check(MainActivity.this, line));
-                            if(line != null && !line.isEmpty())
-                            {
-                                JsonObject json = JsonParser.parseString(line).getAsJsonObject();
-                                runOnUiThread(() ->
-                                {
-                                    switch (json.get("type").getAsString())
-                                    {
-                                        case "id" -> chatContextId = json.get("id").getAsInt();
-                                        case "message" ->
-                                        {
-                                            analyzeView.compileJsonObject(MainActivity.this, json);
-                                            if(json.get("content") != null)
-                                            {
-                                                contentBuilder.append(json.get("content").getAsString());
-                                                responseView.rend(MainActivity.this, contentBuilder.toString());
-                                            }
-                                            if(json.get("reasoning") != null)
-                                            {
-                                                reasoningExpandable.setVisibility(View.VISIBLE);
-                                                reasoningBuilder.append(json.get("reasoning").getAsString());
-                                                reasoningView.rend(MainActivity.this, reasoningBuilder.toString());
-                                            }
-                                            if(json.get("audioContent") != null)
-                                            {
-                                                audioExpandable.setVisibility(View.VISIBLE);
-                                                audioBuilder.append(json.get("audioContent").getAsString());
-                                                audioView.rend(MainActivity.this, audioBuilder.toString());
-                                            }
-                                        }
-                                        /*
-                                        case "process" ->
-                                        {
-                                            audioView.rend(MainActivity.this, audioView.getText() + json.get("text").getAsString() + "\n");
-                                        }
-                                         */
-                                    }
-                                    chatDisplayScroll.fullScroll(View.FOCUS_DOWN);
-                                });
-                            }
-                        }
+                        sendMessageResponse(source);
                         isNewChat = true;
                     }
                     @Override
@@ -486,6 +437,86 @@ public class MainActivity extends AppCompatActivity
                 })
                 .enqueue();
     }
+    private void sendMessageResponse(BufferedSource source) throws IOException
+    {
+        AnalyzeView[] analyzeView = new AnalyzeView[1];
+        ResponseView[] audioView = new ResponseView[1], reasoningView = new ResponseView[1], responseView = new ResponseView[1];
+        ExpandableLayout[] audioExpandable = new ExpandableLayout[1], reasoningExpandable = new ExpandableLayout[1];
+        runOnUiThread(() ->
+        {
+            analyzeView[0] = new AnalyzeView(this);
+            audioView[0] = new ResponseView(this, "", true);
+            reasoningView[0] = new ResponseView(this, "", true);
+            responseView[0] = new ResponseView(this);
+            audioExpandable[0] = new ExpandableLayout(MainActivity.this)
+            {{
+                setHeaderText("音频理解（QWEN）");
+                addComponent(audioView[0]);
+            }};
+            reasoningExpandable[0] = new ExpandableLayout(MainActivity.this)
+            {{
+                setHeaderText("深度思考");
+                addComponent(reasoningView[0]);
+            }};
+            audioExpandable[0].setVisibility(View.GONE);
+            reasoningExpandable[0].setVisibility(View.GONE);
+
+            chatDisplay.addView(analyzeView[0]);
+            chatDisplay.addView(audioExpandable[0]);
+            chatDisplay.addView(reasoningExpandable[0]);
+            chatDisplay.addView(responseView[0]);
+        });
+
+        StringBuilder contentBuilder = new StringBuilder(),
+                reasoningBuilder = new StringBuilder(),
+                audioBuilder = new StringBuilder();
+        while(!source.exhausted())
+        {
+            String line = source.readUtf8Line();
+            Log.i("TAG", "onResponse: " + line);
+            runOnUiThread(() -> ApiClient.check(MainActivity.this, line));
+            if(line != null && !line.isEmpty())
+            {
+                JsonObject json = JsonParser.parseString(line).getAsJsonObject();
+                runOnUiThread(() ->
+                {
+                    switch (json.get("type").getAsString())
+                    {
+                        case "id" -> chatContextId = json.get("id").getAsInt();
+                        case "message" ->
+                        {
+                            analyzeView[0].compileJsonObject(MainActivity.this, json);
+                            if(json.get("content") != null)
+                            {
+                                contentBuilder.append(json.get("content").getAsString());
+                                responseView[0].rend(MainActivity.this, contentBuilder.toString());
+                            }
+                            if(json.get("reasoning") != null)
+                            {
+                                reasoningExpandable[0].setVisibility(View.VISIBLE);
+                                reasoningBuilder.append(json.get("reasoning").getAsString());
+                                reasoningView[0].rend(MainActivity.this, reasoningBuilder.toString());
+                            }
+                            if(json.get("audioContent") != null)
+                            {
+                                audioExpandable[0].setVisibility(View.VISIBLE);
+                                audioBuilder.append(json.get("audioContent").getAsString());
+                                audioView[0].rend(MainActivity.this, audioBuilder.toString());
+                            }
+                        }
+                                        /*
+                                        case "process" ->
+                                        {
+                                            audioView.rend(MainActivity.this, audioView.getText() + json.get("text").getAsString() + "\n");
+                                        }
+                                         */
+                    }
+                    chatDisplayScroll.fullScroll(View.FOCUS_DOWN);
+                });
+            }
+        }
+    }
+
     private String encodeAudioFileToStr(String filePath, FileInputStream stream)
     {
         try
