@@ -3,18 +3,147 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:background="@color/high_light_gray">
 
-    <Button
-            android:id="@+id/change_username_button"
+    <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="更改用户名" />
+            android:layout_marginBottom="15dp">
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="设置"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:padding="10dp"/>
 
-    <Button
-            android:id="@+id/logout_button"
+        <ImageButton
+                android:background="@drawable/img_back"
+                android:backgroundTint="@color/black"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center_vertical" />
+
+    </FrameLayout>
+
+
+    <LinearLayout
+            android:background="@drawable/bg_option"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="注销账户" />
+            android:orientation="vertical"
+            android:layout_marginBottom="20dp">
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:gravity="center_vertical"
+                android:paddingVertical="10dp"
+                android:text="上传头像" />
+        <TextView
+                android:id="@+id/change_username_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:gravity="center_vertical"
+                android:paddingVertical="10dp"
+                android:text="更改用户名" />
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:gravity="center_vertical"
+                android:paddingVertical="10dp"
+                android:text="更改手机号" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:background="@drawable/bg_option"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="20dp">
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:gravity="center_vertical"
+                android:paddingVertical="10dp"
+                android:text="深色模式" />
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:gravity="center_vertical"
+                android:paddingVertical="10dp"
+                android:text="字体大小" />
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:gravity="center_vertical"
+                android:paddingVertical="10dp"
+                android:text="语言" />
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:gravity="center_vertical"
+                android:paddingVertical="10dp"
+                android:text="主题" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:background="@drawable/bg_option"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="20dp">
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:gravity="center_vertical"
+                android:paddingVertical="10dp"
+                android:text="版本更新" />
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:gravity="center_vertical"
+                android:paddingVertical="10dp"
+                android:text="意见反馈" />
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:gravity="center_vertical"
+                android:paddingVertical="10dp"
+                android:text="关于" />
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:background="@drawable/bg_option"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="20dp">
+        <TextView
+                android:id="@+id/logout_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/red"
+                android:gravity="center_vertical"
+                android:paddingVertical="10dp"
+                android:text="退出登录" />
+
+    </LinearLayout>
+
 
 </LinearLayout>

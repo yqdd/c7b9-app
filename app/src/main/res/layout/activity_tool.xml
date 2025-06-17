@@ -3,18 +3,67 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:background="@color/high_light_gray">
 
-    <Button
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:layout_marginBottom="15dp">
+        <ImageButton
+                android:background="@drawable/img_back"
+                android:backgroundTint="@color/black"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center_vertical" />
+
+    </FrameLayout>
+
+    <TextView
+            android:background="@drawable/bg_option"
             android:id="@+id/piano_tool_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="模拟钢琴" />
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:text="模拟钢琴"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="10dp"/>
 
-    <Button
+    <TextView
+            android:background="@drawable/bg_option"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:text="资源"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="10dp"/>
+
+    <TextView
+            android:background="@drawable/bg_option"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:text="历史数据"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="10dp"/>
+
+    <TextView
+            android:background="@drawable/bg_option"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:text="曲目搜索"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="10dp"/>
+
+    <TextView
+            android:background="@drawable/bg_option"
             android:id="@+id/leaderboard_tool_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="调用次数排行" />
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:text="调用次数排行"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="10dp"/>
 
 </LinearLayout>

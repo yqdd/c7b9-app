@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -14,8 +15,7 @@ public class AccountOptionsActivity extends AppCompatActivity
 {
 
     private SharedPreferences sharedPreferences;
-    private Button changeUsernameButton;
-    private Button logoutButton;
+    private TextView changeUsernameButton, logoutButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)

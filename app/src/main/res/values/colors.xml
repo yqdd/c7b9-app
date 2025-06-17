@@ -11,6 +11,7 @@
     <color name="middle_gray">#9D9D9D</color>
     <color name="gray">#BDBDBD</color>
     <color name="light_gray">#E9E9E9</color>
+    <color name="high_light_gray">#F4F4F4</color>
     <color name="white">#FFFFFFFF</color>
 
     <color name="translucent_black">#80333333</color>

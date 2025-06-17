@@ -199,7 +199,7 @@ public class PromptRecordView extends ConstraintLayout
                     @Override
                     public void run()
                     {
-                        if(playingView != PromptRecordView.this) timer.cancel();
+                        if(playingView != PromptRecordView.this) this.cancel();
                         if(mediaPlayer.isPlaying())
                         {
                             int seconds = (mediaPlayer.getCurrentPosition() / 1000) % 60;
