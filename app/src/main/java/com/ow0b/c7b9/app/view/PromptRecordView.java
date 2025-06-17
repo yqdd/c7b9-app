@@ -37,9 +37,11 @@ import okhttp3.Response;
 
 public class PromptRecordView extends ConstraintLayout
 {
-    private MediaPlayer mediaPlayer;
+    private static PromptRecordView playingView = null;
+    private static MediaPlayer mediaPlayer = new MediaPlayer();
     private final Activity activity;
     private AnalyzeView analyzeView;
+    private Inside inside;
     private int id = -1;
     public void setId(int id)
     {
@@ -65,7 +67,7 @@ public class PromptRecordView extends ConstraintLayout
         LayoutParams constraint = new Constraints.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         constraint.endToEnd = LayoutParams.PARENT_ID;
         constraint.topToTop = LayoutParams.PARENT_ID;
-        addView(new Inside(activity), constraint);
+        addView(inside = new Inside(activity), constraint);
     }
 
     public class Inside extends LinearLayout
@@ -77,7 +79,7 @@ public class PromptRecordView extends ConstraintLayout
 
         public void updateAnalyzeView()
         {
-            analyzeView.backgrounds.forEach(b ->
+            if(analyzeView != null) analyzeView.backgrounds.forEach(b ->
             {
                 b.setProcess((float) seekBar.getProgress() / seekBar.getMax());
                 if(b instanceof View view) view.postInvalidate();
@@ -92,16 +94,21 @@ public class PromptRecordView extends ConstraintLayout
             int padding1 = ParaType.toDP(this, 8), padding2 = ParaType.toDP(this, 10);
 
             playButton = new ImageButton(activity);
-            playButton.setImageResource(R.drawable.btn_play_record_small);
+            playButton.setImageResource(R.drawable.btn_record_play_small);
             playButton.setBackgroundColor(getResources().getColor(R.color.empty));
             playButton.setPadding(padding1, padding2, padding1, padding2);
             playButton.setOnClickListener(v ->
             {
                 if(id == -1) Toast.showError(activity, "音频暂未初始化");
+                else if(playingView == null || playingView == PromptRecordView.this)
+                {
+                    if(mediaPlayer.isPlaying()) stopPlayAudio();
+                    else playAudio(activity, id);
+                }
                 else
                 {
-                    if(mediaPlayer == null) playAudio(activity, id);
-                    else stopPlayAudio();
+                    playingView.inside.stopPlayAudio();
+                    playAudio(activity, id);
                 }
             });
             this.addView(playButton);
@@ -129,12 +136,15 @@ public class PromptRecordView extends ConstraintLayout
                 }
                 @Override public void onStopTrackingTouch(SeekBar seekBar)
                 {
-                    if(mediaPlayer != null && mediaPlayer.isPlaying())
+                    if(playingView == PromptRecordView.this)
                     {
-                        stopPlayAudio();
-                        playAudio(activity, id);
+                        if(mediaPlayer.isPlaying())
+                        {
+                            stopPlayAudio();
+                            playAudio(activity, id);
+                        }
+                        else stopPlayAudio();
                     }
-                    else stopPlayAudio();
                 }
             });
             this.addView(seekBar);
@@ -152,6 +162,7 @@ public class PromptRecordView extends ConstraintLayout
 
         private void playAudio(Context context, int id)
         {
+            playingView = PromptRecordView.this;
             boolean exist;
             try(FileInputStream stream = new FileInputStream(audioFile(context, id))) { exist = true; }
             catch (IOException e) { exist = false; }
@@ -163,8 +174,6 @@ public class PromptRecordView extends ConstraintLayout
         {
             try(FileInputStream stream = new FileInputStream(audioFile(context, id)))
             {
-                if(mediaPlayer != null) mediaPlayer.release();
-                mediaPlayer = new MediaPlayer();
                 mediaPlayer.reset();
                 //mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 mediaPlayer.setDataSource(stream.getFD());
@@ -190,7 +199,8 @@ public class PromptRecordView extends ConstraintLayout
                     @Override
                     public void run()
                     {
-                        if(mediaPlayer != null && mediaPlayer.isPlaying())
+                        if(playingView != PromptRecordView.this) timer.cancel();
+                        if(mediaPlayer.isPlaying())
                         {
                             int seconds = (mediaPlayer.getCurrentPosition() / 1000) % 60;
                             int minutes = (mediaPlayer.getCurrentPosition() / 1000) / 60;
@@ -216,15 +226,11 @@ public class PromptRecordView extends ConstraintLayout
         private void stopPlayAudio()
         {
             if(timer != null) timer.cancel();
-            if(mediaPlayer != null)
-            {
-                mediaPlayer.stop();
-                mediaPlayer.release();
-                playButton.setImageResource(R.drawable.btn_play_record_small);
-                textView.setText("00:00");
-            }
+            mediaPlayer.stop();
+            playButton.setImageResource(R.drawable.btn_record_play_small);
+            textView.setText("00:00");
             timer = null;
-            mediaPlayer = null;
+            playingView = null;
         }
         private static void downloadAudio(Context context, int id, Runnable callback)
         {

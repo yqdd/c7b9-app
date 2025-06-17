@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -81,6 +82,7 @@ public class DrawerFragment extends Fragment
                 activity.titleText.setText(conversation.refer);
                 activity.welcomeDisplay.setVisibility(View.GONE);
                 activity.chatDisplay.removeAllViews();
+                Log.i(TAG, "context id:" + conversation.id);
                 activity.loadContext(conversation.id);
                 activity.drawerLayout.closeDrawer(Gravity.LEFT);
             }
@@ -202,7 +204,7 @@ public class DrawerFragment extends Fragment
                         body.add(unit);
                         ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "api/conversation")
                                 .parameter("id", String.valueOf(id))
-                                .method("PATCH", body)
+                                .method("PUT", body)
                                 .callback(new ApiCallback(getActivity())
                                 {
                                     @Override

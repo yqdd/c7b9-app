@@ -160,7 +160,7 @@
 
                     <ImageButton
                             android:id="@+id/play_audio_button"
-                            android:src="@drawable/btn_play_record"
+                            android:src="@drawable/btn_record_play"
                             android:scaleType="fitStart"
                             android:background="@null"
                             app:layout_constraintDimensionRatio="1:1"
@@ -193,7 +193,7 @@
 
                 <ImageButton
                         android:id="@+id/delete_audio_button"
-                        android:src="@drawable/btn_delete_record"
+                        android:src="@drawable/btn_record_delete"
                         android:alpha="0.8"
                         android:scaleType="fitStart"
                         android:background="@null"
@@ -264,7 +264,7 @@
                         app:layout_constraintEnd_toEndOf="parent">
 
                     <ImageButton
-                            android:src="@drawable/btn_start_record"
+                            android:src="@drawable/btn_record_start"
                             android:id="@+id/record_audio_button"
                             android:layout_marginEnd="3dp"
                             android:scaleType="fitStart"

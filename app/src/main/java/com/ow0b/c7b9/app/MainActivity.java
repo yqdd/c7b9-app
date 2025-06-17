@@ -53,7 +53,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Consumer;
@@ -80,7 +79,7 @@ public class MainActivity extends AppCompatActivity
     private ConstraintLayout audioBar;
     private SeekBar audioProgressBar;
     public DrawerLayout drawerLayout;
-    private MediaPlayer mediaPlayer;
+    private MediaPlayer mediaPlayer = new MediaPlayer();
     private Timer mediaPlayerTimer;
     private MediaRecorder mediaRecorder;
     private FileOutputStream audioFileStream;
@@ -91,6 +90,8 @@ public class MainActivity extends AppCompatActivity
     private boolean isRecording = false;
     public boolean isNewChat = false;       //这个用来减少打开Fragment需要的网络请求
     public int chatContextId = -1;
+    private boolean isGenerating = false;
+    private Call generateCall = null;
 
     private static final int REQUEST_PERMISSION_CODE = 1000;
 
@@ -147,36 +148,40 @@ public class MainActivity extends AppCompatActivity
 
         sendButton.setOnClickListener(v ->
         {
-            String text = userInput.getText().toString();
-            if(!text.isEmpty())
+            if(isGenerating) sendMessageToAICancel();
+            else
             {
-                welcomeDisplay.setVisibility(View.GONE);
-                newChatButton.setVisibility(View.VISIBLE);
-                userInput.setText("");
+                String text = userInput.getText().toString();
+                if(!text.isEmpty())
+                {
+                    welcomeDisplay.setVisibility(View.GONE);
+                    newChatButton.setVisibility(View.VISIBLE);
+                    userInput.setText("");
 
-                try(FileInputStream stream = openFileInput(audioFileName))
-                {
-                    PromptRecordView recordView = new PromptRecordView(this);
-                    chatDisplay.addView(recordView);
-                    sendMediaToServer(stream, response ->
+                    try(FileInputStream stream = openFileInput(audioFileName))
                     {
-                        deleteFile(audioFileName);
-                        runOnUiThread(() ->
+                        PromptRecordView recordView = new PromptRecordView(this);
+                        chatDisplay.addView(recordView);
+                        sendMediaToServer(stream, response ->
                         {
-                            chatDisplay.addView(new PromptView(this, text));
-                            JsonObject obj = JsonParser.parseString(response).getAsJsonObject();
-                            int id = obj.get("id").getAsInt();
-                            recordView.setId(id);
-                            sendMessageToAI(text, id);
+                            deleteFile(audioFileName);
+                            runOnUiThread(() ->
+                            {
+                                chatDisplay.addView(new PromptView(this, text));
+                                JsonObject obj = JsonParser.parseString(response).getAsJsonObject();
+                                int id = obj.get("id").getAsInt();
+                                recordView.setId(id);
+                                sendMessageToAI(text, id);
+                            });
                         });
-                    });
-                    audioBar.setVisibility(View.GONE);
-                }
-                catch (IOException ignore)
-                {
-                    //音频文件不存在则只发文本
-                    chatDisplay.addView(new PromptView(this, text));
-                    sendMessageToAI(text, -1);
+                        audioBar.setVisibility(View.GONE);
+                    }
+                    catch (IOException ignore)
+                    {
+                        //音频文件不存在则只发文本
+                        chatDisplay.addView(new PromptView(this, text));
+                        sendMessageToAI(text, -1);
+                    }
                 }
             }
         });
@@ -185,12 +190,12 @@ public class MainActivity extends AppCompatActivity
             if (isRecording)
             {
                 stopRecording();
-                recordAudioButton.setImageResource(R.drawable.btn_start_record);
+                recordAudioButton.setImageResource(R.drawable.btn_record_start);
             }
             else
             {
                 startRecording();
-                recordAudioButton.setImageResource(R.drawable.btn_stop_record);
+                recordAudioButton.setImageResource(R.drawable.btn_record_stop);
             }
         });
         updateSwitchButtonState(audioLLMButton, true);
@@ -221,8 +226,8 @@ public class MainActivity extends AppCompatActivity
         });
         playAudioButton.setOnClickListener(v ->
         {
-            if(mediaPlayer == null) playAudio();
-            else stopPlayAudio();
+            if(mediaPlayer.isPlaying()) stopPlayAudio();
+            else playAudio();
         });
         deleteAudioButton.setOnClickListener(v ->
         {
@@ -238,7 +243,7 @@ public class MainActivity extends AppCompatActivity
             }
             @Override public void onStopTrackingTouch(SeekBar seekBar)
             {
-                if(mediaPlayer != null && mediaPlayer.isPlaying())
+                if(mediaPlayer.isPlaying())
                 {
                     stopPlayAudio();
                     playAudio();
@@ -411,6 +416,31 @@ public class MainActivity extends AppCompatActivity
                 })
                 .enqueue();
     }
+    private void sendMessageToAICancel()
+    {
+        ApiClient.getInstance(this, 120).url(getResources().getString(R.string.server) + "api/context/cancel")
+                .parameter("id", String.valueOf(chatContextId))
+                .get()
+                .callback(new ApiCallback(this)
+                {
+                    @Override public void onResponse(@NonNull String response)
+                    {
+                        MainActivity.this.runOnUiThread(() ->
+                        {
+                            sendButton.setImageResource(R.drawable.btn_send);
+                            ApiClient.check(MainActivity.this, response);
+                        });
+                        isNewChat = true;
+                        isGenerating = false;
+                        if(generateCall != null)
+                        {
+                            generateCall.cancel();
+                            generateCall = null;
+                        }
+                    }
+                })
+                .enqueue();
+    }
     private void sendMessageToAI(String message, int audioId)
     {
         JsonObject json = new JsonObject();
@@ -418,6 +448,14 @@ public class MainActivity extends AppCompatActivity
         if(audioId != -1) json.addProperty("audioId", audioId);
         if(chatContextId != -1) json.addProperty("id", chatContextId);
 
+        Runnable generateFinish = () ->
+        {
+            runOnUiThread(() ->
+            {
+                sendButton.setImageResource(R.drawable.btn_send);
+                isGenerating = false;
+            });
+        };
         ApiClient.getInstance(this, 120).url(getResources().getString(R.string.server) + "api/chat")
                 .method("POST", json)
                 .callback(new Callback()
@@ -425,14 +463,17 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException
                     {
+                        generateCall = call;
                         BufferedSource source = response.body().source();
                         sendMessageResponse(source);
                         isNewChat = true;
+                        generateFinish.run();
                     }
                     @Override
                     public void onFailure(@NonNull Call call, @NonNull IOException e)
                     {
                         runOnUiThread(() -> Toast.showError(MainActivity.this, "连接服务器失败，请稍后再试"));
+                        generateFinish.run();
                     }
                 })
                 .enqueue();
@@ -482,7 +523,16 @@ public class MainActivity extends AppCompatActivity
                 {
                     switch (json.get("type").getAsString())
                     {
-                        case "id" -> chatContextId = json.get("id").getAsInt();
+                        case "id" ->
+                        {
+                            chatContextId = json.get("id").getAsInt();
+                            //新对话需要等待 chatContextId 赋值后才能取消
+                            runOnUiThread(() ->
+                            {
+                                sendButton.setImageResource(R.drawable.btn_send_cancel);
+                                isGenerating = true;
+                            });
+                        }
                         case "message" ->
                         {
                             analyzeView[0].compileJsonObject(MainActivity.this, json);
@@ -533,8 +583,6 @@ public class MainActivity extends AppCompatActivity
 
     private void playAudio()
     {
-        if(mediaPlayer != null) mediaPlayer.release();
-        mediaPlayer = new MediaPlayer();
         try(FileInputStream stream = openFileInput(audioFileName))
         {
             mediaPlayer.reset();
@@ -574,14 +622,9 @@ public class MainActivity extends AppCompatActivity
     private void stopPlayAudio()
     {
         if(mediaPlayerTimer != null) mediaPlayerTimer.cancel();
-        if(mediaPlayer != null)
-        {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-            playAudioButton.setImageResource(R.drawable.btn_play_record);
-        }
+        mediaPlayer.stop();
+        playAudioButton.setImageResource(R.drawable.btn_record_play);
         mediaPlayerTimer = null;
-        mediaPlayer = null;
     }
     private void startRecording()
     {
