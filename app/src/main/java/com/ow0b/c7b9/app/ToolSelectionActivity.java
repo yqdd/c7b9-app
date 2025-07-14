@@ -2,12 +2,11 @@ package com.ow0b.c7b9.app;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.ow0b.c7b9.app.activity.piano.PianoToolActivity;
 
 public class ToolSelectionActivity extends AppCompatActivity
 {

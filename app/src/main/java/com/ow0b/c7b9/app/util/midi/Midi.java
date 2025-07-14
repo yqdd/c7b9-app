@@ -7,9 +7,9 @@ public class Midi
 {
     public String name;
     public float totalTime;
-    public LinkedList<Note> notes;
-    public List<Integer> indexes;
-    public ArrayList<HashSet<Note>> noteGroup;
+    public LinkedList<Note> notes = new LinkedList<>();
+    public List<Integer> indexes = new LinkedList<>();
+    public ArrayList<HashSet<Note>> noteGroup = new ArrayList<>();
 
     @NonNull
     @Override

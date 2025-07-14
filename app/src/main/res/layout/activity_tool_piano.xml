@@ -1,40 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:padding="16dp">
-
-    <FrameLayout
+        android:padding="16dp"
+        android:splitMotionEvents="true">
+    <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="match_parent">
-        <LinearLayout
-                android:id="@+id/piano_whites_container"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:splitMotionEvents="true" />
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_marginEnd="10dp">
+        <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="30dp">
+            <ImageButton
+                    android:background="@drawable/img_back"
+                    android:backgroundTint="@color/black"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center_vertical" />
 
-        <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+        </FrameLayout>
+
+        <ListView
+                android:id="@+id/piano_record_list"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+    </LinearLayout>
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="30dp">
             <LinearLayout
-                    android:id="@+id/piano_blacks_container"
                     android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:layout_weight="0.6"
-                    android:orientation="horizontal"
-                    android:splitMotionEvents="true"/>
-            <View
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+                <ImageButton
+                        android:src="@drawable/btn_piano_list"
+                        android:id="@+id/piano_record_list_button"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_marginEnd="5dp"
+                        android:backgroundTint="@color/empty"
+                        app:tint="@color/black" />
+                <ImageButton
+                        android:src="@drawable/btn_piano_save"
+                        android:id="@+id/piano_record_save_button"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:backgroundTint="@color/empty"
+                        app:tint="@color/black" />
+
+            </LinearLayout>
+
+
+            <ImageButton
+                    android:src="@drawable/btn_piano_reverb"
+                    android:id="@+id/piano_record_reverb_button"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:backgroundTint="@color/empty"
+                    app:tint="@color/black"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            <FrameLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:layout_weight="0.4"
-                    android:orientation="horizontal"
-                    android:splitMotionEvents="true"/>
+                    android:layout_height="match_parent"
+                    android:clickable="false"
+                    android:enabled="false">
+                <LinearLayout
+                        android:id="@+id/piano_whites_container"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal" />
 
-        </LinearLayout>
+                <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+                    <LinearLayout
+                            android:id="@+id/piano_blacks_container"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="0.6"
+                            android:orientation="horizontal"/>
+                    <View
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="0.4"
+                            android:orientation="horizontal"/>
 
-    </FrameLayout>
+                </LinearLayout>
 
-</HorizontalScrollView>
+            </FrameLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+</LinearLayout>

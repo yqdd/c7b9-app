@@ -8,12 +8,13 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 import java.util.List;
 
-public class LeaderboardAdapter extends BaseAdapter {
-
+public class LeaderboardAdapter extends BaseAdapter
+{
     private Context context;
     private List<UserStats> userStatsList;
 
-    public LeaderboardAdapter(Context context, List<UserStats> userStatsList) {
+    public LeaderboardAdapter(Context context, List<UserStats> userStatsList)
+    {
         this.context = context;
         this.userStatsList = userStatsList;
     }
