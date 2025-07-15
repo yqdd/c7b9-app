@@ -3,11 +3,11 @@ package com.ow0b.c7b9.app;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.ow0b.c7b9.app.activity.main.MainActivity;
 import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.Toast;
 

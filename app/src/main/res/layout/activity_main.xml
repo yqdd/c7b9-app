@@ -142,72 +142,16 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/audio_bar"
+            <HorizontalScrollView
+                    android:id="@+id/upload_bar_scroll"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone">
-                <LinearLayout
-                        android:id="@+id/audio_box"
-                        android:background="@drawable/bg_record"
+                    android:layout_height="wrap_content">
+                <com.ow0b.c7b9.app.activity.main.UploadResourceListView
+                        android:id="@+id/upload_bar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="10dp"
-                        android:paddingTop="10dp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
-
-                    <ImageButton
-                            android:id="@+id/play_audio_button"
-                            android:src="@drawable/btn_record_play"
-                            android:scaleType="fitStart"
-                            android:background="@null"
-                            app:layout_constraintDimensionRatio="1:1"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp" />
-
-                    <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical">
-
-                        <TextView
-                                android:id="@+id/audio_indicator"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginLeft="10dp"
-                                android:text="音频已录制"
-                                android:textAppearance="?android:attr/textAppearanceSmall"
-                                android:textColor="@color/light_red" />
-
-                        <SeekBar
-                                android:id="@+id/audio_progress_bar"
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:progressTint="@color/light_red"
-                                android:progressBackgroundTint="@color/light_red"
-                                android:thumbTint="@color/light_red" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <ImageButton
-                        android:id="@+id/delete_audio_button"
-                        android:src="@drawable/btn_record_delete"
-                        android:alpha="0.8"
-                        android:scaleType="fitStart"
-                        android:background="@null"
-                        app:layout_constraintDimensionRatio="1:1"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:layout_marginTop="-5dp"
-                        app:layout_constraintStart_toEndOf="@id/audio_box"
-                        app:layout_constraintEnd_toEndOf="@id/audio_box"
-                        app:layout_constraintTop_toTopOf="@id/audio_box"/>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-
+                        android:orientation="horizontal" />
+            </HorizontalScrollView>
 
             <EditText
                     android:id="@+id/user_input"
@@ -300,7 +244,7 @@
 
     <fragment
             android:id="@+id/fragment_drawer"
-            android:name="com.ow0b.c7b9.app.DrawerFragment"
+            android:name="com.ow0b.c7b9.app.activity.main.DrawerFragment"
             android:layout_width="300dp"
             android:layout_height="match_parent"
             android:layout_gravity="start" />

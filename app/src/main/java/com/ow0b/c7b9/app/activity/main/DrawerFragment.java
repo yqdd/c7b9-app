@@ -1,4 +1,4 @@
-package com.ow0b.c7b9.app;
+package com.ow0b.c7b9.app.activity.main;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -29,6 +28,9 @@ import androidx.fragment.app.Fragment;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.ow0b.c7b9.app.AccountOptionsActivity;
+import com.ow0b.c7b9.app.LoginActivity;
+import com.ow0b.c7b9.app.R;
 import com.ow0b.c7b9.app.util.ApiCallback;
 import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.Toast;

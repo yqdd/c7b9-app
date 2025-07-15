@@ -8,6 +8,7 @@ import android.content.res.ColorStateList;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,9 +16,12 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ScrollView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -53,18 +57,15 @@ public class PianoToolActivity extends AppCompatActivity
 {
     private final static String TAG = "PianoKeys";
     private ImageButton listButton, saveButton, reverbButton;
+    private HorizontalScrollView scroll;
     private ListView recordList;
     private LinearLayout whitesContainer, blacksContainer;
-    private SoundPool soundPool;
-    private final int[] pianoSounds = new int[88];
-    private final Integer[] pianoStreams = new Integer[88];
-    private final ValueAnimator[] pianoAnims = new ValueAnimator[88];
     private final Button[] pianoButtons = new Button[88];
-    private boolean reverb = false;
 
-    private Note[] pianoNotes = new Note[88];
+    private final Note[] pianoNotes = new Note[88];
     private long startTime;
     private Midi midi = new Midi();
+
 
     private PianoRecordAdapter pianoRecordAdapter;
 
@@ -76,7 +77,7 @@ public class PianoToolActivity extends AppCompatActivity
     }
     private void refreshRecord()
     {
-        startTime = System.currentTimeMillis();
+        startTime = SystemClock.uptimeMillis();
         midi = new Midi();
     }
 
@@ -100,14 +101,16 @@ public class PianoToolActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tool_piano);
 
+        scroll = findViewById(R.id.piano_container_scroll);
         listButton = findViewById(R.id.piano_record_list_button);
         saveButton = findViewById(R.id.piano_record_save_button);
         reverbButton = findViewById(R.id.piano_record_reverb_button);
         whitesContainer = findViewById(R.id.piano_whites_container);
         blacksContainer = findViewById(R.id.piano_blacks_container);
-        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
         recordList = findViewById(R.id.piano_record_list);
         recordList.setAdapter(pianoRecordAdapter = new PianoRecordAdapter(this));
+        //滚动到中间位置
+        scroll.post(() -> scroll.scrollTo((scroll.getChildAt(0).getWidth() - scroll.getWidth()) / 2, 0));
 
         loadRecords();
         loadKeys();
@@ -119,14 +122,10 @@ public class PianoToolActivity extends AppCompatActivity
         saveButton.setOnClickListener(v -> saveRecord());
         reverbButton.setOnClickListener(v ->
         {
-            reverb = !reverb;
-            if(!reverb)
+            MidiPlayer.reverb = !MidiPlayer.reverb;
+            if(!MidiPlayer.reverb)
             {
-                for(int i = 0; i < 88; i ++)
-                {
-                    if(pianoStreams[i] != null)
-                        stopKey(i, 100);
-                }
+                MidiPlayer.stopAllKeys();
                 Toast.showInfo(this, "踏板已关闭");
             }
             else Toast.showInfo(this, "踏板已开启");
@@ -135,18 +134,6 @@ public class PianoToolActivity extends AppCompatActivity
 
     private void loadKeys()
     {
-        try
-        {
-            for(int i = 1; i <= 88; i ++)
-            {
-                pianoSounds[i - 1] = soundPool.load(getResources().getAssets().openFd("grand/tone (" + i + ").wav"), 1);
-            }
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
         int[] whites = new int[] {1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1},
                 blackOffset = new int[] {0, 0, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5};
 
@@ -190,61 +177,26 @@ public class PianoToolActivity extends AppCompatActivity
         {
             switch (event.getAction() == MotionEvent.ACTION_CANCEL ? MotionEvent.ACTION_UP : event.getAction())
             {
-                case MotionEvent.ACTION_DOWN -> startKey(i);
+                case MotionEvent.ACTION_DOWN ->
+                {
+                    MidiPlayer.playKey(i);
+                    pianoNotes[i] = new Note(getNoteName(i), i, (SystemClock.uptimeMillis() - startTime) / 1000f, 127);
+                }
                 case MotionEvent.ACTION_UP ->
                 {
-                    if(!reverb) stopKey(i);
+                    if(!MidiPlayer.reverb) MidiPlayer.stopKey(i);
+                    if(pianoNotes[i] != null)
+                    {
+                        pianoNotes[i].end = Math.max((SystemClock.uptimeMillis() - startTime) / 1000f, pianoNotes[i].start + 0.1f);
+                        midi.notes.add(pianoNotes[i]);
+                        pianoNotes[i] = null;
+                    }
                 }
             }
             return false;
         });
     }
-    private void startKey(int i)
-    {
-        if(pianoStreams[i] != null) soundPool.stop(pianoStreams[i]);
-        if(pianoAnims[i] != null) pianoAnims[i].end();
 
-        pianoStreams[i] = soundPool.play(pianoSounds[i], 1, 1, 0, 0, 1);
-        pianoNotes[i] = new Note(getNoteName(i), i, (System.currentTimeMillis() - startTime) / 1000f, 127);
-    }
-    private void stopKey(int i)
-    {
-        stopKey(i, 500);
-    }
-    private void stopKey(int i, int millis)
-    {
-        @SuppressLint("Recycle")
-        ValueAnimator anim = pianoAnims[i] = ValueAnimator.ofFloat(1, 0);
-        anim.addUpdateListener(value ->
-        {
-            if(pianoStreams[i] != null)
-            {
-                soundPool.setVolume(pianoStreams[i], (float) value.getAnimatedValue(), (float) value.getAnimatedValue());
-            }
-        });
-        anim.addListener(new AnimatorListenerAdapter()
-        {
-
-            @Override
-            public void onAnimationEnd(Animator animation)
-            {
-                if(pianoStreams[i] != null)
-                {
-                    soundPool.stop(pianoStreams[i]);
-                    pianoStreams[i] = null;
-                    pianoAnims[i] = null;
-                }
-            }
-        });
-        anim.setDuration(millis);
-        anim.start();
-        if(pianoNotes[i] != null)
-        {
-            pianoNotes[i].end = (System.currentTimeMillis() - startTime) / 1000f;
-            midi.notes.add(pianoNotes[i]);
-            pianoNotes[i] = null;
-        }
-    }
 
     private static String getNoteName(int note)
     {
@@ -255,19 +207,28 @@ public class PianoToolActivity extends AppCompatActivity
     }
     private void saveRecord()
     {
+        //删掉按下音符前空出的片段
+        float min = (float) midi.notes.stream().mapToDouble(n -> n.start).min().orElse(0);
+        midi.notes.forEach(n ->
+        {
+            n.start -= min;
+            n.end -= min;
+        });
+
         @SuppressLint("SimpleDateFormat")
         String name = new SimpleDateFormat("yy.MM.dd HH:mm:ss").format(Date.from(Instant.now()));
-        try(Reader recordsReader = new InputStreamReader(openFileInput("pianoRecords.json"));
-            Writer recordsWriter = new OutputStreamWriter(openFileOutput("pianoRecords.json", MODE_PRIVATE));
+        midi.name = name;
+        try(Writer recordsWriter = new OutputStreamWriter(openFileOutput("pianoRecords.json", MODE_PRIVATE));
             Writer writer = new OutputStreamWriter(openFileOutput("records-" + name + ".json", MODE_PRIVATE)))
         {
             Gson gson = new Gson();
             gson.toJson(midi, writer);
             Toast.showInfo(this, "保存成功");
-            String[] records = gson.fromJson(recordsReader, String[].class);
-            gson.toJson(Stream.concat((records == null ? Stream.of() : Arrays.stream(records)), Stream.of(name)).toArray(), recordsWriter);
+            pianoRecordAdapter.records.add(0, new PianoRecord(name));
+            pianoRecordAdapter.notifyDataSetChanged();
+            recordsWriter.write(gson.toJson(pianoRecordAdapter.records.stream().map(r -> r.name).toArray()));
             refreshRecord();
-            loadRecords();
+            //loadRecords();
         }
         catch (IOException e)
         {
@@ -303,26 +264,11 @@ public class PianoToolActivity extends AppCompatActivity
             throw new RuntimeException(e);
         }
     }
-    /*
-    private void loadRecord(int index)
-    {
-        String name = pianoRecordAdapter.records.get(index).name;
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(openFileInput("records-" + name + ".json"))))
-        {
-            Midi midi = new Gson().fromJson(reader, Midi.class);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-     */
 
     @Override
-    protected void onDestroy()
+    protected void onPause()
     {
-        super.onDestroy();
-        soundPool.release();
-        soundPool = null;
+        super.onPause();
+        MidiPlayer.stop();
     }
 }

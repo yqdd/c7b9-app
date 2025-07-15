@@ -1,30 +1,24 @@
-package com.ow0b.c7b9.app;
+package com.ow0b.c7b9.app.activity.main;
 
-import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.media.MediaPlayer;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.button.MaterialButton;
@@ -32,9 +26,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.ow0b.c7b9.app.R;
+import com.ow0b.c7b9.app.ToolSelectionActivity;
+import com.ow0b.c7b9.app.activity.piano.MidiPlayer;
 import com.ow0b.c7b9.app.util.ApiCallback;
 import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.Toast;
+import com.ow0b.c7b9.app.util.midi.Midi;
 import com.ow0b.c7b9.app.view.AnalyzeView;
 import com.ow0b.c7b9.app.view.ExpandableLayout;
 import com.ow0b.c7b9.app.view.PromptRecordView;
@@ -43,7 +41,6 @@ import com.ow0b.c7b9.app.view.ResponseView;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -51,10 +48,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.function.Consumer;
 
 import okhttp3.Call;
@@ -64,56 +65,50 @@ import okio.BufferedSource;
 
 public class MainActivity extends AppCompatActivity
 {
-    public static MainActivity INSTANCE;
+    private static final String TAG = "MainActivity";
     private SharedPreferences sharedPreferences;
     private EditText userInput;
     public FrameLayout contentFrame;
     public TextView titleText;
     public LinearLayout chatDisplay, welcomeDisplay;
     private ScrollView chatDisplayScroll;
-    private TextView audioIndicator;
-    private ImageButton sendButton, recordAudioButton, playAudioButton, deleteAudioButton;
+    private ImageButton sendButton, recordAudioButton;
     private MaterialButton audioLLMButton, midiAnalyzeButton;
     private Button toolSelectionButton, drawerButton;
     public Button newChatButton;
-    private ConstraintLayout audioBar;
-    private SeekBar audioProgressBar;
+    private HorizontalScrollView uploadResScroll;
+    private UploadResourceListView uploadResources;
     public DrawerLayout drawerLayout;
-    private MediaPlayer mediaPlayer = new MediaPlayer();
-    private Timer mediaPlayerTimer;
-    private MediaRecorder mediaRecorder;
-    private FileOutputStream audioFileStream;
-    private FileDescriptor audioFilePath;
     private final String audioFileName = "audio.m4a";
     public int audioLLMModel = 1;        //0为无，1为Qwen，2为Gemini
     public boolean isMidiOn = false;
-    private boolean isRecording = false;
     public boolean isNewChat = false;       //这个用来减少打开Fragment需要的网络请求
     public int chatContextId = -1;
     private boolean isGenerating = false;
     private Call generateCall = null;
 
-    private static final int REQUEST_PERMISSION_CODE = 1000;
+    @Override
+    @SuppressLint("NewApi")
+    protected void onStart()
+    {
+        super.onStart();
+        //加载其他activity启动main传入的资源
+        Intent intent = getIntent();
+        if(intent.getExtras() != null)
+        {
+            Midi midi = intent.getExtras().getSerializable("midi", Midi.class);
+            Log.d(TAG, "onResume: " + midi);
+            if (midi != null) uploadResources.addResource(this, midi);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        INSTANCE = this;
-
         setContentView(R.layout.activity_main);
-        deleteFile(audioFileName);
-        try(InputStream input = getAssets().open("testAudio.m4a");
-            OutputStream output = openFileOutput(audioFileName, MODE_PRIVATE))
-        {
-            int b;
-            while((b = input.read()) != -1) output.write(b);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-        findViewById(R.id.audio_bar).setVisibility(View.VISIBLE);
+        clearAudioCache();
+        MidiPlayer.init(this);
 
         //sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
         userInput = findViewById(R.id.user_input);
@@ -121,13 +116,10 @@ public class MainActivity extends AppCompatActivity
         chatDisplay = findViewById(R.id.chat_display);
         welcomeDisplay = findViewById(R.id.welcome_display);
         chatDisplayScroll = findViewById(R.id.chat_display_scroll);
-        audioIndicator = findViewById(R.id.audio_indicator);
         sendButton = findViewById(R.id.send_button);
         recordAudioButton = findViewById(R.id.record_audio_button);
-        playAudioButton = findViewById(R.id.play_audio_button);
-        deleteAudioButton = findViewById(R.id.delete_audio_button);
-        audioBar = findViewById(R.id.audio_bar);
-        audioProgressBar = findViewById(R.id.audio_progress_bar);
+        uploadResScroll = findViewById(R.id.upload_bar_scroll);
+        uploadResources = findViewById(R.id.upload_bar);
         audioLLMButton = findViewById(R.id.audio_llm_button);
         midiAnalyzeButton = findViewById(R.id.midi_analyze_button);
         toolSelectionButton = findViewById(R.id.tool_selection_button);
@@ -135,6 +127,19 @@ public class MainActivity extends AppCompatActivity
         newChatButton = findViewById(R.id.new_chat_button);
         contentFrame = findViewById(R.id.content_frame);
         drawerLayout = findViewById(R.id.drawer_layout);
+
+        //添加测试用的音频
+        try(InputStream input = getAssets().open("testAudio.m4a");
+            OutputStream output = new FileOutputStream(AudioRecorder.audioFile(this, "testAudio.m4a")))
+        {
+            int b;
+            while((b = input.read()) != -1) output.write(b);
+            uploadResources.resources.add("testAudio.m4a");
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
 
         chatDisplay.addOnLayoutChangeListener(new View.OnLayoutChangeListener()
         {
@@ -174,7 +179,7 @@ public class MainActivity extends AppCompatActivity
                                 sendMessageToAI(text, id);
                             });
                         });
-                        audioBar.setVisibility(View.GONE);
+                        //uploadResources.setVisibility(View.GONE);
                     }
                     catch (IOException ignore)
                     {
@@ -187,14 +192,15 @@ public class MainActivity extends AppCompatActivity
         });
         recordAudioButton.setOnClickListener(v ->
         {
-            if (isRecording)
+            if (AudioRecorder.isRecording())
             {
-                stopRecording();
+                String fileName = AudioRecorder.stopRecording();
+                uploadResources.addResource(fileName);
                 recordAudioButton.setImageResource(R.drawable.btn_record_start);
             }
             else
             {
-                startRecording();
+                AudioRecorder.startRecording(this, "record:" + Instant.now() + ".m4a");
                 recordAudioButton.setImageResource(R.drawable.btn_record_stop);
             }
         });
@@ -223,33 +229,6 @@ public class MainActivity extends AppCompatActivity
         {
             isMidiOn = !isMidiOn;
             updateSwitchButtonState(midiAnalyzeButton, isMidiOn);
-        });
-        playAudioButton.setOnClickListener(v ->
-        {
-            if(mediaPlayer.isPlaying()) stopPlayAudio();
-            else playAudio();
-        });
-        deleteAudioButton.setOnClickListener(v ->
-        {
-            audioBar.setVisibility(View.GONE);
-            deleteFile(audioFileName);
-        });
-        audioProgressBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
-        {
-            @Override public void onProgressChanged(SeekBar seekBar, int i, boolean b) { }
-            @Override public void onStartTrackingTouch(SeekBar seekBar)
-            {
-                if(mediaPlayerTimer != null) mediaPlayerTimer.cancel();
-            }
-            @Override public void onStopTrackingTouch(SeekBar seekBar)
-            {
-                if(mediaPlayer.isPlaying())
-                {
-                    stopPlayAudio();
-                    playAudio();
-                }
-                else stopPlayAudio();
-            }
         });
 
         toolSelectionButton.setOnClickListener(v ->
@@ -581,118 +560,29 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void playAudio()
-    {
-        try(FileInputStream stream = openFileInput(audioFileName))
-        {
-            mediaPlayer.reset();
-            mediaPlayer.setDataSource(stream.getFD());
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-            mediaPlayer.setOnCompletionListener(mediaPlayer ->
-            {
-                stopPlayAudio();
-                audioProgressBar.setProgress(0);
-            });
-
-            audioProgressBar.setMax(mediaPlayer.getDuration());
-            mediaPlayer.seekTo((int) (((float) audioProgressBar.getProgress() / audioProgressBar.getMax()) * mediaPlayer.getDuration()));
-            mediaPlayerTimer = new Timer();
-            int[] min = new int[1];
-            mediaPlayerTimer.schedule(new TimerTask()
-            {
-                @Override
-                public void run()
-                {
-                    if(mediaPlayer != null && mediaPlayer.isPlaying())
-                    {
-                        audioProgressBar.setProgress(Math.max(mediaPlayer.getCurrentPosition(), min[0]));
-                        min[0] = audioProgressBar.getProgress();
-                    }
-                }
-            }, 10, 10);
-
-            playAudioButton.setImageResource(R.drawable.btn_stop_play_record);
-        }
-        catch (IOException e)
-        {
-            Toast.showError(MainActivity.this, "当前未录制音频");
-        }
-    }
-    private void stopPlayAudio()
-    {
-        if(mediaPlayerTimer != null) mediaPlayerTimer.cancel();
-        mediaPlayer.stop();
-        playAudioButton.setImageResource(R.drawable.btn_record_play);
-        mediaPlayerTimer = null;
-    }
-    private void startRecording()
-    {
-        requestPermission();
-        if (checkPermission())
-        {
-            try
-            {
-                audioFileStream = openFileOutput(audioFileName, MODE_PRIVATE);
-                audioFilePath = audioFileStream.getFD();
-                setupMediaRecorder();
-                mediaRecorder.prepare();
-                mediaRecorder.start();
-                isRecording = true;
-                //recordAudioButton.setText("停止");
-                audioIndicator.setText("音频录制中...");
-                //Toast.makeText(MainActivity.this, "Recording started", Toast.LENGTH_SHORT).show();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        else
-        {
-            requestPermission();
-        }
-    }
-    private void stopRecording()
+    private void clearAudioCache()
     {
         try
         {
-            mediaRecorder.stop();
-            mediaRecorder.release();
-            audioFileStream.close();
-            isRecording = false;
-            //recordAudioButton.setText("录制");
-            audioIndicator.setText("音频已录制");
-            audioBar.setVisibility(View.VISIBLE);
+            Files.walkFileTree(AudioRecorder.audioCacheDir(this), new SimpleFileVisitor<>()
+            {
+                @Override
+                public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes) throws IOException
+                {
+                    path.toFile().deleteOnExit();
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            Log.e(TAG, "clearAudioCache: ", e);
         }
     }
-    private void setupMediaRecorder()
-    {
-        mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-        mediaRecorder.setAudioSamplingRate(44100);
-        mediaRecorder.setAudioEncodingBitRate(128000);
-        mediaRecorder.setAudioChannels(1);
-        mediaRecorder.setOutputFile(audioFilePath);
-    }
 
 
-    private boolean checkPermission()
-    {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
-    }
-    private void requestPermission()
-    {
-        ActivityCompat.requestPermissions(this, new String[] {
-                Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO
-        }, REQUEST_PERMISSION_CODE);
-    }
+
+    /*
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
     {
@@ -709,4 +599,5 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
+     */
 }

@@ -1,4 +1,4 @@
-package com.ow0b.c7b9.app;
+package com.ow0b.c7b9.app.activity.main;
 
 public class Conversation
 {

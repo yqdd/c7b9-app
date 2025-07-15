@@ -2,7 +2,9 @@ package com.ow0b.c7b9.app.util.midi;
 
 import androidx.annotation.NonNull;
 
-public class Note
+import java.io.Serializable;
+
+public class Note implements Serializable
 {
     public String note;
     public byte pitch;

@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/piano_record_layout"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="horizontal"
         android:padding="8dp"
@@ -9,9 +10,9 @@
 
     <ImageButton
             android:src="@drawable/btn_piano_delete"
+            android:id="@+id/piano_delete_button"
             app:tint="@color/gray"
             android:background="@color/empty"
-            android:id="@+id/piano_delete_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"/>
@@ -27,14 +28,15 @@
 
     <ImageButton
             android:src="@drawable/btn_piano_play"
+            android:id="@+id/piano_play_button"
             app:tint="@color/gray"
             android:background="@color/empty"
-            android:id="@+id/piano_play_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"/>
     <ImageButton
-            android:src="@drawable/btn_piano_play"
+            android:src="@drawable/btn_piano_upload"
+            android:id="@+id/piano_upload_button"
             app:tint="@color/gray"
             android:background="@color/empty"
             android:layout_width="wrap_content"

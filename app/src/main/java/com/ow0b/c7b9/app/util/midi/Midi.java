@@ -1,9 +1,11 @@
 package com.ow0b.c7b9.app.util.midi;
 
 import androidx.annotation.NonNull;
+
+import java.io.Serializable;
 import java.util.*;
 
-public class Midi
+public class Midi implements Serializable
 {
     public String name;
     public float totalTime;

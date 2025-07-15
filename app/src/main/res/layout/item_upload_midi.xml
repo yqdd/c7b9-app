@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    <LinearLayout
+            android:id="@+id/midi_box"
+            android:background="@drawable/bg_midi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="5dp"
+            android:paddingTop="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+                android:id="@+id/resource_play_button"
+                android:src="@drawable/btn_midi_play"
+                android:scaleType="fitStart"
+                android:background="@null"
+                app:layout_constraintDimensionRatio="1:1"
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <TextView
+                    android:id="@+id/resource_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:text="midi名"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="@color/dark_gray" />
+
+            <SeekBar
+                    android:id="@+id/resource_progress_bar"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:progressTint="@color/dark_gray"
+                    android:progressBackgroundTint="@color/dark_gray"
+                    android:thumbTint="@color/dark_gray" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <ImageButton
+            android:id="@+id/resource_delete_button"
+            android:src="@drawable/btn_record_delete"
+            android:alpha="0.8"
+            android:scaleType="fitStart"
+            android:background="@null"
+            app:layout_constraintDimensionRatio="1:1"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="-5dp"
+            app:layout_constraintStart_toEndOf="@id/midi_box"
+            app:layout_constraintEnd_toEndOf="@id/midi_box"
+            app:layout_constraintTop_toTopOf="@id/midi_box"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
