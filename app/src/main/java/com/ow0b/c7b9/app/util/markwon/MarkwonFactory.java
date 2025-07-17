@@ -1,18 +1,28 @@
 package com.ow0b.c7b9.app.util.markwon;
 
 import android.content.Context;
+import android.net.Uri;
+import android.text.method.ScrollingMovementMethod;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import com.ow0b.c7b9.app.activity.main.chat.UserPromptView;
 import com.ow0b.pianoapp.util.markwon.GrammarLocatorImpl;
 
 import org.commonmark.node.FencedCodeBlock;
 
+import java.net.URI;
+
 import io.noties.markwon.AbstractMarkwonPlugin;
+import io.noties.markwon.LinkResolver;
 import io.noties.markwon.Markwon;
+import io.noties.markwon.MarkwonConfiguration;
 import io.noties.markwon.MarkwonVisitor;
 import io.noties.markwon.ext.tables.TablePlugin;
 import io.noties.markwon.html.HtmlPlugin;
+import io.noties.markwon.html.tag.LinkHandler;
+import io.noties.markwon.movement.MovementMethodPlugin;
 import io.noties.markwon.syntax.Prism4jThemeDefault;
 import io.noties.markwon.syntax.SyntaxHighlightPlugin;
 import io.noties.prism4j.Prism4j;
@@ -23,11 +33,11 @@ public class MarkwonFactory
     {
         return Markwon.builder(context).usePlugin(TablePlugin.create(context)).build();
     }
-    public static Markwon getSyntaxInstance(Context context)
+    public static Markwon getSyntaxInstance(Context context, UserPromptView userPromptView)
     {
         return Markwon.builder(context)
-                .usePlugin(HtmlPlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(new Prism4j(new GrammarLocatorImpl()), Prism4jThemeDefault.create(0)))
+                .usePlugin(HtmlPlugin.create())
                 .usePlugin(new AbstractMarkwonPlugin()
                 {
                     @Override public void configureVisitor(@NonNull MarkwonVisitor.Builder builder)

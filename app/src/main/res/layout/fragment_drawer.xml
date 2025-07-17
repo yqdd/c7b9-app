@@ -6,50 +6,159 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/fragment_header"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp">
         <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/user_avatar"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:id="@+id/fragment_user_avatar"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
                 app:shapeAppearance="@style/Circle"
-                android:src="@drawable/ic_user_avatar" />
+                android:src="@drawable/ic_user_avatar"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
         <TextView
-                android:id="@+id/username"
-                android:layout_width="wrap_content"
+                android:id="@+id/fragment_no_login"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:textSize="20sp"
                 android:text="未登录"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:paddingHorizontal="12dp" />
-    </LinearLayout>
+                android:paddingHorizontal="12dp"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="@id/fragment_user_avatar"
+                app:layout_constraintEnd_toStartOf="@id/fragment_scan"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+        <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="center"
+                android:paddingHorizontal="12dp"
+                app:layout_constraintStart_toEndOf="@id/fragment_user_avatar"
+                app:layout_constraintEnd_toStartOf="@id/fragment_scan"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+            <TextView
+                    android:id="@+id/fragment_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="用户名"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                <TextView
+                        android:id="@+id/fragment_token"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="11sp"
+                        android:textColor="@color/gray"
+                        android:text="使用时长：1422h   消耗token：2010293"
+                        android:textAppearance="?android:attr/textAppearanceLarge" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <ImageButton
+                android:id="@+id/fragment_scan"
+                android:src="@drawable/btn_piano_reverb"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_marginEnd="5dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-
-
-    <TextView
-            android:id="@+id/conversations_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="对话记录"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/dark_gray"
-            android:textSize="15sp"
-            android:padding="8dp" />
-
-    <ListView
-            android:id="@+id/conversations_list"
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:dividerHeight="1dp" />
-    <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
 
-    </ScrollView>
+        <TextView
+                android:id="@+id/conversations_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="对话"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/dark_gray"
+                android:textSize="15sp"
+                android:padding="8dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/conversations_list"
+                app:layout_constraintStart_toStartOf="parent" />
+        <EditText
+                android:id="@+id/conversations_search"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_chat"
+                android:hint="搜索"
+                android:textColor="@color/gray"
+                android:textSize="15sp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:gravity="center_vertical"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/conversations_list"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        <ListView
+                android:id="@+id/conversations_list"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:dividerHeight="1dp"
+                app:layout_constraintTop_toBottomOf="@id/conversations_label"
+                app:layout_constraintBottom_toTopOf="@id/fragment_drawer_tool_scroll"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+        <HorizontalScrollView
+                android:id="@+id/fragment_drawer_tool_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:scrollbars="none"
+                app:layout_constraintTop_toBottomOf="@id/conversations_list"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent">
+                <TextView
+                        style="@style/fragment_drawer_tool_scroll_button"
+                        android:text="练耳" />
+                <TextView
+                        style="@style/fragment_drawer_tool_scroll_button"
+                        android:text="班级"/>
+                <TextView
+                        style="@style/fragment_drawer_tool_scroll_button"
+                        android:text="节拍器"/>
+                <TextView
+                        style="@style/fragment_drawer_tool_scroll_button"
+                        android:text="调音器"/>
+                <TextView
+                        style="@style/fragment_drawer_tool_scroll_button"
+                        android:text="AI记忆"/>
+                <TextView
+                        style="@style/fragment_drawer_tool_scroll_button"
+                        android:text="历史数据"/>
+                <TextView
+                        style="@style/fragment_drawer_tool_scroll_button"
+                        android:text="曲目搜索"/>
+                <TextView
+                        style="@style/fragment_drawer_tool_scroll_button"
+                        android:text="token排行"/>
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

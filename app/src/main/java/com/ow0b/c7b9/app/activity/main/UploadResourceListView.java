@@ -35,7 +35,7 @@ public class UploadResourceListView extends LinearLayout
         this.context = context;
     }
 
-    public List<Object> resources = new ArrayList<>();
+    public final List<Object> resources = new ArrayList<>();
     public void addResource(Activity activity, Midi midi)
     {
         View item = LayoutInflater.from(context).inflate(R.layout.item_upload_midi, this, false);
@@ -45,19 +45,10 @@ public class UploadResourceListView extends LinearLayout
         resources.add(midi);
         initResource(midi, item, v ->
                 {
-                    if(MidiPlayer.isPlaying())
-                    {
-                        MidiPlayer.stop();
-                    }
-                    else
-                    {
-                        MidiPlayer.play(activity, midi);
-                    }
+                    if(MidiPlayer.isPlaying()) MidiPlayer.stop();
+                    else MidiPlayer.play(activity, midi);
                 },
-                v ->
-                {
-                    item.setVisibility(View.GONE);
-                },
+                v -> item.setVisibility(View.GONE),
                 v -> AudioPlayer.cancel(),
                 v ->
                 {
@@ -106,8 +97,11 @@ public class UploadResourceListView extends LinearLayout
                         AudioPlayer.playAudio(getContext(), audioFileName, v.progressBar, () ->
                                 v.playButton.setImageResource(R.drawable.btn_record_play));
                     }
-                    else AudioPlayer.stopPlayAudio();
-                    v.playButton.setImageResource(R.drawable.btn_record_play);
+                    else
+                    {
+                        AudioPlayer.stopPlayAudio();
+                        v.playButton.setImageResource(R.drawable.btn_record_play);
+                    }
                 });
     }
 
@@ -131,7 +125,6 @@ public class UploadResourceListView extends LinearLayout
         });
         progressBar.setOnTouchListener((v, event) ->
         {
-            //TODO chatDisplay里面也加个类似的
             //防止ScrollView拦截事件
             v.getParent().requestDisallowInterceptTouchEvent(true);
             return false;

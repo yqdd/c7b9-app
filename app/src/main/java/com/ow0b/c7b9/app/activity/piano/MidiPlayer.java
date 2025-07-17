@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 public class MidiPlayer
 {
     private final static String TAG = "MidiPlayer";
-    private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(88);
+    private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
     private static SoundPool soundPool;
     private static final int[] pianoSounds = new int[88];
     private static final Integer[] pianoStreams = new Integer[88];
@@ -68,7 +68,7 @@ public class MidiPlayer
         {
             stopAllKeys();
             executor.shutdownNow();
-            executor = Executors.newScheduledThreadPool(88);
+            executor = Executors.newScheduledThreadPool(3);
         }
     }
     public static boolean isPlaying()

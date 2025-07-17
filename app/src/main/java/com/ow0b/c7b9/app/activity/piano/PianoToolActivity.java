@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.res.ColorStateList;
+import android.graphics.Rect;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
@@ -132,6 +133,7 @@ public class PianoToolActivity extends AppCompatActivity
         });
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void loadKeys()
     {
         int[] whites = new int[] {1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1},

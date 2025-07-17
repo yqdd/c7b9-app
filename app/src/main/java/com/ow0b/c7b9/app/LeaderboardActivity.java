@@ -3,6 +3,13 @@ package com.ow0b.c7b9.app;
 import android.os.Bundle;
 import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +29,15 @@ public class LeaderboardActivity extends AppCompatActivity
 
         // Fetch leaderboard data
         List<UserStats> userStatsList = getUserStats();
+
+
+        LineChart chart = findViewById(R.id.board_speed);
+
+        LineData data = new LineData();
+        data.addDataSet(new LineDataSet(List.of(new Entry(0, 0), new Entry(100, 100)), "测试"));
+        chart.setData(data);
+
+
 
         // Set up leaderboard list
         leaderboardAdapter = new LeaderboardAdapter(this, userStatsList);

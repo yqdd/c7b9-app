@@ -32,12 +32,10 @@ android {
     }
 }
 
-
 dependencies {
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
-    implementation libs.constraintlayout
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
@@ -48,6 +46,7 @@ dependencies {
     kapt 'io.noties:prism4j-bundler:2.0.0'
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'com.google.code.gson:gson:2.12.1'
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 }
 
 configurations.all {

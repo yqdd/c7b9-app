@@ -14,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -22,6 +23,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
@@ -46,10 +48,11 @@ public class DrawerFragment extends Fragment
 {
     public static DrawerFragment INSTANCE;
     public String TAG = "侧边栏";
-    private LinearLayout fragmentHeader;
+    private ConstraintLayout fragmentHeader;
     private ImageView userAvatar;
     private TextView username;
     private ListView conversationsList;
+    private HorizontalScrollView toolScroll;
     private ConversationsAdapter conversationsAdapter;
     private SharedPreferences sharedPreferences;
 
@@ -65,11 +68,17 @@ public class DrawerFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_drawer, container, false);
 
         fragmentHeader = view.findViewById(R.id.fragment_header);
-        userAvatar = view.findViewById(R.id.user_avatar);
-        username = view.findViewById(R.id.username);
+        userAvatar = view.findViewById(R.id.fragment_user_avatar);
+        username = view.findViewById(R.id.fragment_username);
         conversationsList = view.findViewById(R.id.conversations_list);
-
+        toolScroll = view.findViewById(R.id.fragment_drawer_tool_scroll);
         sharedPreferences = ApiClient.getSharedPreferences(getContext());
+
+        toolScroll.setOnTouchListener((v, event) ->
+        {
+            v.getParent().requestDisallowInterceptTouchEvent(true);
+            return false;
+        });
 
         conversationsAdapter = new ConversationsAdapter(getContext(), new ArrayList<>());
         conversationsList.setAdapter(conversationsAdapter);

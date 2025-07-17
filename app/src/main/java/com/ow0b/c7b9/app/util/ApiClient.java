@@ -3,14 +3,20 @@ package com.ow0b.c7b9.app.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.ow0b.c7b9.app.R;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,8 +35,6 @@ import okhttp3.Response;
 
 public class ApiClient
 {
-    private static ApiClient instance;
-    private static Context context;
     private final OkHttpClient client;
     private final SharedPreferences sharedPreferences;
     public static SharedPreferences getSharedPreferences(Context context)
@@ -205,5 +209,49 @@ public class ApiClient
             //if(error != null && !error.isJsonNull()) Toast.showError(context, error.getAsString());
         }
         return null;
+    }
+    public static void downloadResource(Context context, ProgressBar progressBar, int rid, File saveFile, Runnable callback)
+    {
+        downloadResourceClient(context, progressBar, saveFile, callback)
+                .parameter("id", String.valueOf(rid))
+                .enqueue();
+    }
+    public static void downloadResource(Context context, ProgressBar progressBar, String secret, File saveFile, Runnable callback)
+    {
+        downloadResourceClient(context, progressBar, saveFile, callback)
+                .parameter("secret", secret)
+                .enqueue();
+    }
+    private static ApiClient downloadResourceClient(Context context, ProgressBar progressBar, File saveFile, Runnable callback)
+    {
+        return ApiClient.getInstance(context).url(context.getResources().getString(R.string.server) + "resource")
+                .get()
+                .callback(new Callback()
+                {
+                    @Override
+                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException
+                    {
+                        InputStream body = response.body().byteStream();
+                        long length = response.body().contentLength();
+                        long current = 0;
+                        progressBar.setMax(10000);
+                        try(OutputStream output = new FileOutputStream(saveFile))
+                        {
+                            int b;
+                            while((b = body.read()) != -1)
+                            {
+                                output.write(b);
+                                current ++;
+                            }
+                            progressBar.setProgress((int) ((current / length) * 10000));
+                        }
+                        callback.run();
+                    }
+                    @Override
+                    public void onFailure(@NonNull Call call, @NonNull IOException e)
+                    {
+                        Toast.showError(context, "下载音频文件出现未知错误");
+                    }
+                });
     }
 }

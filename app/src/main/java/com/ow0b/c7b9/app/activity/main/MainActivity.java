@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -27,8 +26,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.ow0b.c7b9.app.R;
-import com.ow0b.c7b9.app.ToolSelectionActivity;
 import com.ow0b.c7b9.app.activity.piano.MidiPlayer;
+import com.ow0b.c7b9.app.activity.piano.PianoToolActivity;
 import com.ow0b.c7b9.app.util.ApiCallback;
 import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.Toast;
@@ -36,8 +35,8 @@ import com.ow0b.c7b9.app.util.midi.Midi;
 import com.ow0b.c7b9.app.view.AnalyzeView;
 import com.ow0b.c7b9.app.view.ExpandableLayout;
 import com.ow0b.c7b9.app.view.PromptRecordView;
-import com.ow0b.c7b9.app.view.PromptView;
-import com.ow0b.c7b9.app.view.ResponseView;
+import com.ow0b.c7b9.app.activity.main.chat.UserPromptView;
+import com.ow0b.c7b9.app.activity.main.chat.AiResponseView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -76,10 +75,8 @@ public class MainActivity extends AppCompatActivity
     private MaterialButton audioLLMButton, midiAnalyzeButton;
     private Button toolSelectionButton, drawerButton;
     public Button newChatButton;
-    private HorizontalScrollView uploadResScroll;
     private UploadResourceListView uploadResources;
     public DrawerLayout drawerLayout;
-    private final String audioFileName = "audio.m4a";
     public int audioLLMModel = 1;        //0为无，1为Qwen，2为Gemini
     public boolean isMidiOn = false;
     public boolean isNewChat = false;       //这个用来减少打开Fragment需要的网络请求
@@ -118,7 +115,6 @@ public class MainActivity extends AppCompatActivity
         chatDisplayScroll = findViewById(R.id.chat_display_scroll);
         sendButton = findViewById(R.id.send_button);
         recordAudioButton = findViewById(R.id.record_audio_button);
-        uploadResScroll = findViewById(R.id.upload_bar_scroll);
         uploadResources = findViewById(R.id.upload_bar);
         audioLLMButton = findViewById(R.id.audio_llm_button);
         midiAnalyzeButton = findViewById(R.id.midi_analyze_button);
@@ -128,13 +124,14 @@ public class MainActivity extends AppCompatActivity
         contentFrame = findViewById(R.id.content_frame);
         drawerLayout = findViewById(R.id.drawer_layout);
 
+        //TODO 用户页的滚动token数与使用时长切换
         //添加测试用的音频
         try(InputStream input = getAssets().open("testAudio.m4a");
             OutputStream output = new FileOutputStream(AudioRecorder.audioFile(this, "testAudio.m4a")))
         {
             int b;
             while((b = input.read()) != -1) output.write(b);
-            uploadResources.resources.add("testAudio.m4a");
+            uploadResources.addResource("testAudio.m4a");
         }
         catch (IOException e)
         {
@@ -163,6 +160,86 @@ public class MainActivity extends AppCompatActivity
                     newChatButton.setVisibility(View.VISIBLE);
                     userInput.setText("");
 
+                    UserPromptView promptView = new UserPromptView(this);
+                    AiResponseView responseView = new AiResponseView(this, promptView);
+                    chatDisplay.addView(promptView);
+                    chatDisplay.addView(responseView);
+
+                    promptView.newText().setText(text);
+                    responseView.rend(this, """
+                                在Spring MVC集成MyBatis的场景下，事务的提交时机**不会**在`@ModelAttribute`方法调用后自动触发，而是由Spring的事务管理机制控制。以下是关键点的详细说明：
+                                
+                                ---
+                                
+                                ### 1. **默认情况下，`@ModelAttribute`方法不开启事务**
+                                   - `@ModelAttribute`方法通常用于准备模型数据，与数据库的交互通常是**只读操作**。
+                                   - 即使方法中包含MyBatis的写操作（如`insert/update`），如果没有显式配置事务，MyBatis会默认**自动提交**（前提是使用的`SqlSession`是非事务性的，例如`SqlSessionTemplate`配置为`ExecutorType.SIMPLE`）。
+                                   - 但这种情况不推荐，实际项目中应通过Spring事务管理控制写操作。
+                                
+                                {"playAudio":0, "skip":4.6}
+                                
+                                ---
+                                
+                                ### 2. **事务提交的触发条件**
+                                   - 事务的提交或回滚由**`@Transactional`注解**或**声明式事务配置**决定，通常作用在Service层方法上。
+                                   - 只有当标记了`@Transactional`的方法**成功执行完毕**时，事务才会提交。如果方法抛出未捕获的异常，事务会回滚。
+                                   - **示例：**
+                                     ```java
+                                     @Service
+                                     public class UserService {
+                                         @Transactional
+                                         public void updateUser(User user) {
+                                             userMapper.update(user); // 此处的MyBatis操作会在方法成功后提交
+                                         }
+                                     }
+                                     ```
+                                
+                                ---
+                                
+                                ### 3. **`@ModelAttribute`方法的特殊情况**
+                                   - 如果`@ModelAttribute`方法被意外标记了`@Transactional`，则事务会在该方法执行完成后提交（但这是**不推荐的实践**，因为`@ModelAttribute`应专注于模型准备，而非业务逻辑）。
+                                   - 如果Controller类全局使用了`@Transactional`（极端不推荐），则所有请求处理方法（包括`@ModelAttribute`）会共享同一事务，事务会在请求处理完成后提交。
+                                
+                                ---
+                                
+                                ### 4. **MyBatis与Spring事务的协作**
+                                   - MyBatis通过`SqlSessionTemplate`与Spring事务管理器（如`DataSourceTransactionManager`）集成。
+                                   - 事务的生命周期由Spring管理，MyBatis仅作为执行SQL的工具，**不直接控制事务边界**。
+                                
+                                ---
+                                
+                                ### 5. **验证事务行为的方法**
+                                   - 在`@ModelAttribute`方法中插入数据后，**主动抛出异常**，观察数据是否回滚。
+                                   - 检查日志中是否有`Committing JDBC transaction`或`Rolling back JDBC transaction`（需开启Spring事务日志：`logging.level.org.springframework.transaction=DEBUG`）。
+                                
+                                ---
+                                
+                                ### 总结
+                                - **正常情况**：`@ModelAttribute`方法中的MyBatis操作不会自动触发事务提交，除非显式配置了错误的事务管理。
+                                - **最佳实践**：将数据库写操作放在Service层的`@Transactional`方法中，确保事务可控。
+                                
+                                如果有其他特殊配置（如手动事务管理或自定义AOP），需要结合具体代码分析。
+                                """);
+
+                    for(Object res : uploadResources.resources)
+                    {
+                        if(res instanceof String fileName)
+                        {
+                            File file = AudioPlayer.audioFile(this, fileName);
+                            try(FileInputStream stream = new FileInputStream(file);
+                                FileOutputStream outTest = new FileOutputStream(AudioPlayer.audioFile(this, "0")))
+                            {
+                                int b;
+                                while((b = stream.read()) != -1) outTest.write(b);
+                                promptView.newAudio(0);
+                            }
+                            catch (IOException e)
+                            {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+                    /*
                     try(FileInputStream stream = openFileInput(audioFileName))
                     {
                         PromptRecordView recordView = new PromptRecordView(this);
@@ -172,7 +249,7 @@ public class MainActivity extends AppCompatActivity
                             deleteFile(audioFileName);
                             runOnUiThread(() ->
                             {
-                                chatDisplay.addView(new PromptView(this, text));
+                                chatDisplay.addView(new UserPromptView(this));     // text
                                 JsonObject obj = JsonParser.parseString(response).getAsJsonObject();
                                 int id = obj.get("id").getAsInt();
                                 recordView.setId(id);
@@ -184,9 +261,10 @@ public class MainActivity extends AppCompatActivity
                     catch (IOException ignore)
                     {
                         //音频文件不存在则只发文本
-                        chatDisplay.addView(new PromptView(this, text));
+                        chatDisplay.addView(new UserPromptView(this));      //, text
                         sendMessageToAI(text, -1);
                     }
+                     */
                 }
             }
         });
@@ -194,6 +272,8 @@ public class MainActivity extends AppCompatActivity
         {
             if (AudioRecorder.isRecording())
             {
+                //TODO 这里要做个删除（现在多文件要保存多个文件名删）
+                //TODO 或者上传后直接用rid保存到本地？？？？
                 String fileName = AudioRecorder.stopRecording();
                 uploadResources.addResource(fileName);
                 recordAudioButton.setImageResource(R.drawable.btn_record_start);
@@ -233,7 +313,7 @@ public class MainActivity extends AppCompatActivity
 
         toolSelectionButton.setOnClickListener(v ->
         {
-            Intent intent = new Intent(MainActivity.this, ToolSelectionActivity.class);
+            Intent intent = new Intent(MainActivity.this, PianoToolActivity.class);
             startActivity(intent);
         });
 
@@ -361,19 +441,19 @@ public class MainActivity extends AppCompatActivity
                     if(audioContent != null) chatDisplay.addView(new ExpandableLayout(this)
                     {{
                         setHeaderText("音频理解（QWEN）");
-                        addComponent(new ResponseView(MainActivity.this, audioContent, true));
+                        //addComponent(new AiResponseView(MainActivity.this, audioContent, true));
                     }});
                     if(reasoning != null) chatDisplay.addView(new ExpandableLayout(this)
                     {{
                         setHeaderText("深度思考");
-                        addComponent(new ResponseView(MainActivity.this, reasoning, true));
+                        //addComponent(new AiResponseView(MainActivity.this, reasoning, true));
                     }});
-                    chatDisplay.addView(new ResponseView(MainActivity.this, content));
+                    //chatDisplay.addView(new AiResponseView(MainActivity.this, content));
                 }
                 else if(role.equals("user"))
                 {
                     if(audioId >= 0) chatDisplay.addView(promptRecord[0] = new PromptRecordView(MainActivity.this, audioId));
-                    chatDisplay.addView(new PromptView(MainActivity.this, content));
+                    chatDisplay.addView(new UserPromptView(MainActivity.this));     //, content
                 }
                 else Toast.showError(MainActivity.this, "加载对话失败");
 
@@ -383,6 +463,7 @@ public class MainActivity extends AppCompatActivity
 
     private void sendMediaToServer(FileInputStream stream, Consumer<String> callback)
     {
+        /*
         ApiClient.getInstance(this).url(getResources().getString(R.string.server) + "api/upload")
                 .method("POST", encodeAudioFileToStr(audioFileName, stream), "audio/m4a")
                 .callback(new ApiCallback(this)
@@ -394,6 +475,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 })
                 .enqueue();
+         */
     }
     private void sendMessageToAICancel()
     {
@@ -460,14 +542,14 @@ public class MainActivity extends AppCompatActivity
     private void sendMessageResponse(BufferedSource source) throws IOException
     {
         AnalyzeView[] analyzeView = new AnalyzeView[1];
-        ResponseView[] audioView = new ResponseView[1], reasoningView = new ResponseView[1], responseView = new ResponseView[1];
+        AiResponseView[] audioView = new AiResponseView[1], reasoningView = new AiResponseView[1], responseView = new AiResponseView[1];
         ExpandableLayout[] audioExpandable = new ExpandableLayout[1], reasoningExpandable = new ExpandableLayout[1];
         runOnUiThread(() ->
         {
             analyzeView[0] = new AnalyzeView(this);
-            audioView[0] = new ResponseView(this, "", true);
-            reasoningView[0] = new ResponseView(this, "", true);
-            responseView[0] = new ResponseView(this);
+            //audioView[0] = new AiResponseView(this, "", true);
+            //reasoningView[0] = new AiResponseView(this, "", true);
+            //responseView[0] = new AiResponseView(this);
             audioExpandable[0] = new ExpandableLayout(MainActivity.this)
             {{
                 setHeaderText("音频理解（QWEN）");
@@ -580,7 +662,12 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        MidiPlayer.stop();
+    }
 
     /*
     @Override

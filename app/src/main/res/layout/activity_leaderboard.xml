@@ -4,15 +4,23 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="16dp">
-
-    <TextView
-            android:id="@+id/leaderboard_title"
-            android:layout_width="wrap_content"
+    <FrameLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="排行榜"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:layout_gravity="center"
-            android:padding="8dp" />
+            android:layout_marginBottom="10dp">
+        <ImageButton
+                android:background="@drawable/img_back"
+                android:backgroundTint="@color/black"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center_vertical" />
+
+    </FrameLayout>
+
+    <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/board_speed"
+            android:layout_width="match_parent"
+            android:layout_height="200dp" />
 
     <ListView
             android:id="@+id/leaderboard_list"
