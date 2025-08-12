@@ -27,9 +27,10 @@
         </activity>
         <activity android:name=".ToolSelectionActivity" android:launchMode="singleTask"/>
         <activity android:name=".activity.piano.PianoToolActivity" android:launchMode="singleTask" android:screenOrientation="landscape"/>
+        <activity android:name=".activity.metronome.MetronomeActivity" android:launchMode="singleTask" android:screenOrientation="landscape"/>
         <activity android:name=".LeaderboardActivity" android:launchMode="singleTask"/>
         <activity android:name=".LoginActivity" android:launchMode="singleTask"/>
-        <activity android:name=".RegisterActivity" android:launchMode="singleTask"/>
+        <activity android:name=".RegistryActivity" android:launchMode="singleTask"/>
         <activity android:name=".AccountOptionsActivity" android:launchMode="singleTask"/>
         <!-- <activity android:name=".ChangeUsernameActivity" android:launchMode="singleTask"/> -->
     </application>

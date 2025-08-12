@@ -1,17 +1,13 @@
-package com.ow0b.c7b9.app.view;
+package com.ow0b.c7b9.app.activity.main.chat;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
 
 import com.ow0b.c7b9.app.R;
 import com.ow0b.c7b9.app.util.ParaType;

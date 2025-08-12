@@ -17,7 +17,8 @@ public abstract class ApiCallback implements Callback
     {
         this.activity = activity;
     }
-    public abstract void onResponse(@NonNull String response);
+    public void onResponse(@NonNull String response) {}
+    public void onResponse(@NonNull Response resp, @NonNull String body) {}
 
     @Override
     public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException

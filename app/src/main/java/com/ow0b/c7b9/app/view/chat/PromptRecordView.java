@@ -1,4 +1,4 @@
-package com.ow0b.c7b9.app.view;
+package com.ow0b.c7b9.app.view.chat;
 
 import android.app.Activity;
 import android.content.Context;
@@ -234,7 +234,7 @@ public class PromptRecordView extends ConstraintLayout
         }
         private static void downloadAudio(Context context, int id, Runnable callback)
         {
-            ApiClient.getInstance(context).url(context.getResources().getString(R.string.server) + "api/upload")
+            ApiClient.getInstance(context).url(context.getResources().getString(R.string.server) + "/resource/upload")
                     .parameter("id", String.valueOf(id))
                     .get()
                     .callback(new Callback()

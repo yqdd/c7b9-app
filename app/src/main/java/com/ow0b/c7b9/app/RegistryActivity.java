@@ -7,13 +7,14 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.gson.JsonObject;
 import com.ow0b.c7b9.app.util.ApiCallback;
 import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.Encryption;
 import com.ow0b.c7b9.app.util.Toast;
 
-public class RegisterActivity extends AppCompatActivity
+import okhttp3.Response;
+
+public class RegistryActivity extends AppCompatActivity
 {
     private EditText usernameInput, passwordInput;
     private Button registerButton;
@@ -32,32 +33,31 @@ public class RegisterActivity extends AppCompatActivity
         {
             String username = usernameInput.getText().toString();
             String password = passwordInput.getText().toString();
-            registerUser(username, password);
+            registryUser(username, password);
         });
     }
 
-    private void registerUser(String username, String password)
+    private void registryUser(String username, String password)
     {
-        JsonObject json = new JsonObject();
-        json.addProperty("username", username);
-        json.addProperty("password", Encryption.encryptMD5(password));
-
-        ApiClient.getInstance(this).url(getResources().getString(R.string.server) + "register")
-                .method("POST", json)
+        ApiClient.getInstance(this).url(getResources().getString(R.string.server) + "/registry")
+                .parameter("username", username)
+                .parameter("password", Encryption.encryptMD5(password))
+                .get()
                 .callback(new ApiCallback(this)
                 {
                     @Override
-                    public void onResponse(String response)
+                    public void onResponse(Response resp, String body)
                     {
                         runOnUiThread(() ->
                         {
-                            if(ApiClient.check(RegisterActivity.this, response).equals("info"))
+                            ApiClient.check(RegistryActivity.this, body);
+                            if(resp.code() == 200)
                             {
-                                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                                Toast.showInfo(RegisterActivity.this, "注册成功");
+                                Intent intent = new Intent(RegistryActivity.this, LoginActivity.class);
+                                Toast.showInfo(RegistryActivity.this, "注册成功");
                                 startActivity(intent);
                             }
-                            else Toast.showInfo(RegisterActivity.this, "注册失败，用户名已存在");
+                            else Toast.showInfo(RegistryActivity.this, "注册失败，用户名已存在");
                         });
                     }
                 })

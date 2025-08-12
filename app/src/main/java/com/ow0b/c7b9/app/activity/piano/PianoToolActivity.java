@@ -1,13 +1,8 @@
 package com.ow0b.c7b9.app.activity.piano;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.graphics.Rect;
-import android.media.AudioManager;
-import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
@@ -21,43 +16,32 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonParser;
 import com.ow0b.c7b9.app.R;
+import com.ow0b.c7b9.app.activity.metronome.MetronomeActivity;
 import com.ow0b.c7b9.app.util.ParaType;
 import com.ow0b.c7b9.app.util.Toast;
 import com.ow0b.c7b9.app.util.midi.Midi;
 import com.ow0b.c7b9.app.util.midi.Note;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
-import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Stream;
 
 public class PianoToolActivity extends AppCompatActivity
 {
     private final static String TAG = "PianoKeys";
-    private ImageButton listButton, saveButton, reverbButton;
+    private ImageButton reverbButton;
+    private LinearLayout listButton, saveButton, metronomeButton;
     private HorizontalScrollView scroll;
     private ListView recordList;
     private LinearLayout whitesContainer, blacksContainer;
@@ -105,6 +89,7 @@ public class PianoToolActivity extends AppCompatActivity
         scroll = findViewById(R.id.piano_container_scroll);
         listButton = findViewById(R.id.piano_record_list_button);
         saveButton = findViewById(R.id.piano_record_save_button);
+        metronomeButton = findViewById(R.id.piano_record_metronome_button);
         reverbButton = findViewById(R.id.piano_record_reverb_button);
         whitesContainer = findViewById(R.id.piano_whites_container);
         blacksContainer = findViewById(R.id.piano_blacks_container);
@@ -121,6 +106,7 @@ public class PianoToolActivity extends AppCompatActivity
             else recordList.setVisibility(View.VISIBLE);
         });
         saveButton.setOnClickListener(v -> saveRecord());
+        metronomeButton.setOnClickListener(v -> startActivity(new Intent(PianoToolActivity.this, MetronomeActivity.class)));
         reverbButton.setOnClickListener(v ->
         {
             MidiPlayer.reverb = !MidiPlayer.reverb;

@@ -1,10 +1,11 @@
-package com.ow0b.c7b9.app.view;
+package com.ow0b.c7b9.app.activity.main.chat;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.VelocityTracker;
@@ -17,22 +18,22 @@ import android.widget.TextView;
 import com.ow0b.c7b9.app.R;
 import com.ow0b.c7b9.app.util.ParaType;
 import com.ow0b.c7b9.app.util.midi.Midi;
+import com.ow0b.c7b9.app.util.midi.Note;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class PianoRollView extends View implements RecordBackground
+public class MidiChartView extends LinearLayout implements PlayProgressBackground
 {
 
     private Paint notePaint, scrollBarPaint, recordPaint;
 
-    private List<Note> notes = new ArrayList<>(); // 音符列表
+    private Midi midi;
     private int keyHeight = 2; // 每个音高的高度（像素）
     private float timeWidth = 30; // 每个时间单位的宽度（像素）
     private float minTimeWidth = 1; // 最小时间单位宽度
     private float maxTimeWidth = 400; // 最大时间单位宽度
-    private float totalTime;
 
     private float offsetX = 0; // 当前水平滚动偏移
     private float lastTouchX = 0; // 上一次触摸位置
@@ -42,22 +43,45 @@ public class PianoRollView extends View implements RecordBackground
 
     private int scrollBarHeight = 10; // 滚动条高度（像素）
 
-    public PianoRollView(Context context)
+    public MidiChartView(Context context)
     {
         super(context);
+        int dp10 = ParaType.toDP(this, 10);
+        setOrientation(LinearLayout.VERTICAL);
+        setBackground(context.getDrawable(R.drawable.bg_chat));
+        setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT)
+        {{
+            bottomMargin = dp10;
+            leftMargin = dp10;
+        }});
+        setPadding(dp10, dp10, dp10, dp10);
+        /*
+        if (text != null)
+        {
+            TextView title = new TextView(context);
+            title.setText("测试测试.mid");
+            layout.addView(title);
+        }
+         */
+
         init();
+        setMidi(midi = new Midi()
+        {{
+            totalTime = 10;
+            notes.add(new Note(null, 60, 0, 20) {{ end = 1; }});
+            notes.add(new Note(null, 60, 1, 20) {{ end = 2; }});
+            notes.add(new Note(null, 66, 2, 20) {{ end = 3; }});
+            notes.add(new Note(null, 26, 25, 20) {{ end = 31; }});
+        }});
     }
 
-    public PianoRollView(Context context, AttributeSet attrs)
-    {
-        super(context, attrs);
-        init();
-    }
-    public static ViewGroup getView(Context context, PianoRollView instance)
+    public static ViewGroup getView(Context context, MidiChartView instance)
     {
         return getView(context, null, instance);
     }
-    public static ViewGroup getView(Context context, String text, PianoRollView instance)
+    public static ViewGroup getView(Context context, String text, MidiChartView instance)
     {
         LinearLayout layout = new LinearLayout(context);
         int dp10 = ParaType.toDP(layout, 10);
@@ -109,16 +133,7 @@ public class PianoRollView extends View implements RecordBackground
 
     public void setMidi(Midi midi)
     {
-        this.notes = new ArrayList<>();
-        this.totalTime = midi.totalTime;
-        for(int i = 0; i < midi.noteGroup.size(); i++)
-        {
-            HashSet<com.ow0b.c7b9.app.util.midi.Note> group = midi.noteGroup.get(i);
-            for(com.ow0b.c7b9.app.util.midi.Note n : group)
-            {
-                this.notes.add(new Note(n.pitch, n.start, n.end - n.start, midi.indexes != null && midi.indexes.contains(i)));
-            }
-        }
+        this.midi = midi;
         requestLayout(); // 重新计算布局
         invalidate(); // 重新绘制视图
     }
@@ -146,7 +161,7 @@ public class PianoRollView extends View implements RecordBackground
          */
 
         // 根据最大时长设置宽度
-        int desiredWidth = (int) (totalTime * timeWidth); // 每个时间单位宽度动态调整
+        int desiredWidth = (int) (midi.totalTime * timeWidth); // 每个时间单位宽度动态调整
         int desiredHeight = 128 * keyHeight + scrollBarHeight; // MIDI 音高范围 + 滚动条高度
 
         int width = resolveSize(desiredWidth, widthMeasureSpec);
@@ -162,18 +177,18 @@ public class PianoRollView extends View implements RecordBackground
 
         // 使用水平偏移量绘制音符
         canvas.translate(-offsetX, 0);
-        canvas.drawRect(0, 0, process * totalTime * timeWidth, getHeight(), recordPaint);
+        canvas.drawRect(0, 0, process * midi.totalTime * timeWidth, getHeight(), recordPaint);
 
         // 绘制音符
-        for (Note note : notes)
+        for (Note note : midi.notes)
         {
-            float left = note.startTime * timeWidth; // 每个时间单位宽度动态调整
+            float left = note.start * timeWidth; // 每个时间单位宽度动态调整
             float top = (127 - note.pitch) * keyHeight; // MIDI 音高范围：0-127
-            float right = left + note.duration * timeWidth;
+            float right = left + (note.end - note.start) * timeWidth;
             float bottom = top + keyHeight;
 
-            if(colorRed || note.colorRed) notePaint.setColor(getResources().getColor(R.color.light_red));
-            else notePaint.setColor(getResources().getColor(R.color.dark_gray));
+            //TODO if(colorRed || note.colorRed) notePaint.setColor(getResources().getColor(R.color.light_red));
+            notePaint.setColor(getResources().getColor(R.color.dark_gray));
             canvas.drawRect(left, top, right, bottom, notePaint);
         }
 
@@ -305,16 +320,7 @@ public class PianoRollView extends View implements RecordBackground
      */
     private float computeContentWidth()
     {
-        float maxEndTime = 0;
-        for (Note note : notes)
-        {
-            float noteEndTime = note.startTime + note.duration;
-            if (noteEndTime > maxEndTime)
-            {
-                maxEndTime = noteEndTime;
-            }
-        }
-        return maxEndTime * timeWidth;
+        return (float) midi.notes.stream().mapToDouble(n -> n.end).max().orElse(0) * timeWidth;
     }
 
     // 手势监听器，用于处理双指缩放
@@ -337,25 +343,6 @@ public class PianoRollView extends View implements RecordBackground
             invalidate();
 
             return true;
-        }
-    }
-
-    /**
-     * 音符类表示一个 MIDI 音符
-     */
-    public static class Note
-    {
-        public final int pitch; // 音高（MIDI 音符值：0-127）
-        public final float startTime; // 开始时间（单位时间）
-        public final float duration; // 持续时间（单位时间）
-        public final boolean colorRed;
-
-        public Note(int pitch, float startTime, float duration, boolean red)
-        {
-            this.pitch = pitch;
-            this.startTime = startTime;
-            this.duration = duration;
-            this.colorRed = red;
         }
     }
 }

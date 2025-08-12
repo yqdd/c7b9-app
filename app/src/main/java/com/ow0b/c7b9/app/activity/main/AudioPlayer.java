@@ -8,25 +8,14 @@ import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-
-import com.ow0b.c7b9.app.R;
-import com.ow0b.c7b9.app.activity.piano.MidiPlayer;
 import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.Toast;
-import com.ow0b.c7b9.app.view.PromptRecordView;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 public class AudioPlayer
 {

@@ -8,12 +8,13 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.gson.JsonObject;
 import com.ow0b.c7b9.app.activity.main.DrawerFragment;
 import com.ow0b.c7b9.app.activity.main.MainActivity;
 import com.ow0b.c7b9.app.util.ApiCallback;
 import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.Encryption;
+
+import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity
 {
@@ -41,27 +42,26 @@ public class LoginActivity extends AppCompatActivity
 
         registerButton.setOnClickListener(v ->
         {
-            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            Intent intent = new Intent(LoginActivity.this, RegistryActivity.class);
             startActivity(intent);
         });
     }
 
     private void loginUser(String username, String password)
     {
-        JsonObject json = new JsonObject();
-        json.addProperty("username", username);
-        json.addProperty("password", Encryption.encryptMD5(password));
-
-        ApiClient.getInstance(this).url(getResources().getString(R.string.server) + "login")
-                .method("POST", json)
+        ApiClient.getInstance(this).url(getResources().getString(R.string.server) + "/login")
+                .parameter("username", username)
+                .parameter("password", Encryption.encryptMD5(password))
+                .get()
                 .callback(new ApiCallback(this)
                 {
                     @Override
-                    public void onResponse(String response)
+                    public void onResponse(Response resp, String body)
                     {
                         runOnUiThread(() ->
                         {
-                            if(ApiClient.check(LoginActivity.this, response).equals("info"))
+                            ApiClient.check(LoginActivity.this, body);
+                            if(resp.code() == 200)
                             {
                                 DrawerFragment.INSTANCE.init();
 

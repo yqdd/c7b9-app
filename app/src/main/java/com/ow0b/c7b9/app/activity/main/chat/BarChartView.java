@@ -1,4 +1,4 @@
-package com.ow0b.c7b9.app.view;
+package com.ow0b.c7b9.app.activity.main.chat;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -17,22 +17,48 @@ import com.ow0b.c7b9.app.util.ParaType;
 
 import java.util.List;
 
-public class BarChartView extends View
+public class BarChartView extends View implements PlayProgressBackground
 {
-    private Paint barPaint, linePaint;
+    private Paint barPaint, linePaint, progressPaint;
     private Paint textPaint;
     private List<Integer> data;
     private List<String> labels;
     public BarChartView(Context context)
     {
         super(context);
-        init();
+        LinearLayout.LayoutParams layout = new LinearLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ParaType.toDP(this, 100));
+        layout.bottomMargin = ParaType.toDP(this, 10);
+        layout.leftMargin = ParaType.toDP(this, 10);
+        setLayoutParams(layout);
+        setBackground(getResources().getDrawable(R.drawable.bg_chat));
+
+        int padding = ParaType.toDP(this, 10);
+        setPadding(padding, padding, padding, padding);
+
+        barPaint = new Paint();
+        barPaint.setColor(getResources().getColor(R.color.gray));
+        barPaint.setStyle(Paint.Style.FILL);
+
+        float internal = ParaType.toDP(this, 5);
+        linePaint = new Paint();
+        linePaint.setColor(getResources().getColor(R.color.middle_gray));
+        linePaint.setPathEffect(new DashPathEffect(new float[] {internal, internal}, 0));
+        linePaint.setStrokeWidth(5f);
+
+        progressPaint = new Paint();
+        progressPaint.setColor(getResources().getColor(R.color.translucent_gray));
+
+        textPaint = new Paint();
+        textPaint.setColor(getResources().getColor(R.color.black));
+        textPaint.setTextSize(30);
+        textPaint.setTextAlign(Paint.Align.CENTER);
     }
-    public BarChartView(Context context, AttributeSet attrs)
+    public BarChartView(Context context, List<Integer> data)
     {
-        super(context, attrs);
-        init();
+        this(context);
+        setData(data);
     }
+
     public static ViewGroup getView(Context context, BarChartView instance)
     {
         FrameLayout frame = new FrameLayout(context);
@@ -50,24 +76,6 @@ public class BarChartView extends View
         return frame;
     }
 
-    private void init()
-    {
-        barPaint = new Paint();
-        barPaint.setColor(getResources().getColor(R.color.light_red));
-        barPaint.setStyle(Paint.Style.FILL);
-
-        float internal = ParaType.toDP(this, 5);
-        linePaint = new Paint();
-        linePaint.setColor(getResources().getColor(R.color.dark_gray));
-        linePaint.setPathEffect(new DashPathEffect(new float[] {internal, internal}, 0));
-        linePaint.setStrokeWidth(5f);
-
-        textPaint = new Paint();
-        textPaint.setColor(getResources().getColor(R.color.black));
-        textPaint.setTextSize(30);
-        textPaint.setTextAlign(Paint.Align.CENTER);
-    }
-
     public void setData(List<Integer> data)
     {
         this.data = data;
@@ -75,15 +83,25 @@ public class BarChartView extends View
         invalidate();
     }
 
+    float process = 0;
+    @Override
+    public void setProcess(float process)
+    {
+        this.process = process;
+    }
     @Override
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
         if (data == null) return;
 
-        int width = getWidth();
-        int height = getHeight();
+        int pLeft = getPaddingLeft(), pRight = getPaddingRight(),
+                pTop = getPaddingTop(), pBottom = getPaddingBottom();
+        int width = getWidth() - pLeft - pRight;
+        int height = getHeight() - pTop - pBottom;
         int barWidth = Math.min(width / data.size(), 100);
+
+        canvas.drawRect(0, 0, getWidth() * process, getHeight(), progressPaint);
 
         int maxValue = 0;
         for (int value : data)
@@ -94,10 +112,10 @@ public class BarChartView extends View
         for (int i = 0; i < data.size(); i++)
         {
             int barHeight = (int) ((data.get(i) / (float) maxValue) * (height - 100));
-            int left = i * barWidth;
-            int top = height - barHeight;
+            int left = i * barWidth + pLeft;
+            int top = height - barHeight + pTop;
             int right = left + barWidth - 20;
-            int bottom = height;
+            int bottom = height + pTop;
 
             canvas.drawRect(left, top, right, bottom, barPaint);
             if(labels != null && labels.get(i) != null)
@@ -105,6 +123,6 @@ public class BarChartView extends View
         }
 
         int standHeight = (int) ((100 / (float) maxValue) * (height - 100));
-        canvas.drawLine(0, height - standHeight, width, height - standHeight, linePaint);
+        canvas.drawLine(pLeft, height - standHeight + pTop, width, height - standHeight + pTop, linePaint);
     }
 }

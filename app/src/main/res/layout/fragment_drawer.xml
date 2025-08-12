@@ -49,7 +49,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
-                    android:text="用户名"
+                    android:text="未登录"
                     android:textAppearance="?android:attr/textAppearanceLarge" />
 
             <LinearLayout
@@ -116,9 +116,10 @@
                 android:layout_height="0dp"
                 android:dividerHeight="1dp"
                 app:layout_constraintTop_toBottomOf="@id/conversations_label"
-                app:layout_constraintBottom_toTopOf="@id/fragment_drawer_tool_scroll"
                 app:layout_constraintStart_toStartOf="parent"/>
+        <!--app:layout_constraintBottom_toTopOf="@id/fragment_drawer_tool_scroll"-->
 
+        <!--
         <HorizontalScrollView
                 android:id="@+id/fragment_drawer_tool_scroll"
                 android:layout_width="match_parent"
@@ -158,7 +159,7 @@
 
             </LinearLayout>
 
-        </HorizontalScrollView>
+        </HorizontalScrollView>-->
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

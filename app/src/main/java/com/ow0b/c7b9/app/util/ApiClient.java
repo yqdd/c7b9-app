@@ -7,6 +7,8 @@ import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -35,6 +37,8 @@ import okhttp3.Response;
 
 public class ApiClient
 {
+    private final static String TAG = ApiClient.class.getName();
+    private final static Gson gson = new GsonBuilder().create();
     private final OkHttpClient client;
     private final SharedPreferences sharedPreferences;
     public static SharedPreferences getSharedPreferences(Context context)
@@ -111,6 +115,13 @@ public class ApiClient
         this.body = body;
         return this;
     }
+    public ApiClient method(String method, Object body)
+    {
+        this.method = method;
+        this.type = "application/json";
+        this.body = gson.toJson(body);
+        return this;
+    }
     public ApiClient method(String method, String body, String type)
     {
         this.method = method;
@@ -157,7 +168,8 @@ public class ApiClient
                 if(callback instanceof ApiCallback apiCallback)
                 {
                     String body = response.body().string();
-                    Log.i("TAG", "onResponse: " + body);
+                    Log.i(TAG, "request: " + call.request());
+                    Log.i(TAG, "response: " + body);
                     //这里如果报IllegalStateException，response是空的，是后端json格式没写对（每条请求必须带random和permit）
                     JsonObject respJson = JsonParser.parseString(body).getAsJsonObject();
                     SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -167,6 +179,7 @@ public class ApiClient
                         editor.putString("permit", respJson.get("permit").getAsString());
                     editor.apply();
                     apiCallback.onResponse(body);
+                    apiCallback.onResponse(response, body);
                 }
                 else callback.onResponse(call, response);
             }
@@ -224,7 +237,7 @@ public class ApiClient
     }
     private static ApiClient downloadResourceClient(Context context, ProgressBar progressBar, File saveFile, Runnable callback)
     {
-        return ApiClient.getInstance(context).url(context.getResources().getString(R.string.server) + "resource")
+        return ApiClient.getInstance(context).url(context.getResources().getString(R.string.server) + "/resource")
                 .get()
                 .callback(new Callback()
                 {

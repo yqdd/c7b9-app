@@ -21,22 +21,42 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UserPromptView extends LinearLayout
+public class ChatContextView extends LinearLayout
 {
-    public UserPromptView(@NonNull Context context)
+    private final Context context;
+    public ChatContextView(@NonNull Context context)
     {
         super(context);
+        this.context = context;
         setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         setOrientation(VERTICAL);
         ((MarginLayoutParams) getLayoutParams()).bottomMargin = ParaType.toDP(this, 10);
     }
 
-    public TextView newText()
+    public TextView newUserText()
     {
-        View view = LayoutInflater.from(getContext()).inflate(R.layout.item_prompt_text, this);
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.item_prompt_text, this, false);
+        addView(view);
         return view.findViewById(R.id.chat_display_prompt_text);
     }
-    private final Map<Integer, View> audios = new HashMap<>();
+    public AiTextView newAiText()
+    {
+        AiTextView view = new AiTextView(context, ChatContextView.this, false);
+        addView(view);
+        return view;
+    }
+    public AiTextView newAiText(String header)
+    {
+        AiTextView view = new AiTextView(context, ChatContextView.this, true);
+        addView(new ExpandableLayout(context)
+        {{
+            setHeaderText(header);
+            addComponent(view);
+        }});
+        return view;
+    }
+
+    public final Map<Integer, View> audios = new HashMap<>();
     public View getAudioView(int rid)
     {
         return audios.get(rid);
@@ -80,7 +100,7 @@ public class UserPromptView extends LinearLayout
             }
         });
     }
-    public boolean skipPlayAudio(int rid, float second, Runnable start)
+    boolean skipPlayAudio(int rid, float second, Runnable start)
     {
         if(AudioPlayer.isPlaying()) AudioPlayer.stopPlayAudio();
         if(audios.containsKey(rid))

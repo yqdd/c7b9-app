@@ -1,4 +1,4 @@
-package com.ow0b.c7b9.app.view;
+package com.ow0b.c7b9.app.view.chat;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,6 +16,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.ow0b.c7b9.app.R;
+import com.ow0b.c7b9.app.activity.main.chat.BarChartView;
+import com.ow0b.c7b9.app.activity.main.chat.LineChartView;
+import com.ow0b.c7b9.app.activity.main.chat.MidiChartView;
+import com.ow0b.c7b9.app.activity.main.chat.PlayProgressBackground;
 import com.ow0b.c7b9.app.util.ApiCallback;
 import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.Toast;
@@ -34,16 +38,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.function.Function;
 
+
+@Deprecated
 public class AnalyzeView extends LinearLayout
 {
-    public HashSet<RecordBackground> backgrounds = new HashSet<>();
+    public HashSet<PlayProgressBackground> backgrounds = new HashSet<>();
     private final BarChartView speed;
     private final ViewGroup speedView;
     private final LineChartView force;
-    private final ViewGroup forceView;
-    private final PianoRollView standMidi;
+    //private final ViewGroup forceView;
+    private final MidiChartView standMidi;
     private final ViewGroup standMidiView;
-    private final PianoRollView userMidi;
+    private final MidiChartView userMidi;
     private final ViewGroup userMidiView;
 
     public AnalyzeView(Context context)
@@ -54,20 +60,20 @@ public class AnalyzeView extends LinearLayout
 
         speed = new BarChartView(context);
         force = new LineChartView(context);
-        standMidi = new PianoRollView(context);
-        userMidi = new PianoRollView(context) {{ setColorRed(true); }};
+        standMidi = new MidiChartView(context);
+        userMidi = new MidiChartView(context) {{ setColorRed(true); }};
 
-        addView(userMidiView = PianoRollView.getView(context, userMidi));
-        addView(standMidiView = PianoRollView.getView(context, "", standMidi));
-        addView(forceView = LineChartView.getView(context, force));
+        addView(userMidiView = MidiChartView.getView(context, userMidi));
+        addView(standMidiView = MidiChartView.getView(context, "", standMidi));
+        //addView(forceView = LineChartView.getView(context, force));
         addView(speedView = BarChartView.getView(context, speed));
         userMidiView.setVisibility(View.GONE);
         standMidiView.setVisibility(View.GONE);
-        forceView.setVisibility(View.GONE);
+        //forceView.setVisibility(View.GONE);
         speedView.setVisibility(View.GONE);
 
         backgrounds.add(userMidi);
-        backgrounds.add(force);
+        //backgrounds.add(force);
     }
 
     public void compileJsonObject(Activity activity, JsonObject json)
@@ -182,7 +188,7 @@ public class AnalyzeView extends LinearLayout
     public void setForce(List<Float> force1, List<Float> force2, int forcePhase, int forceTail)
     {
         force.setData(force1, force2, forcePhase, forceTail);
-        forceView.setVisibility(VISIBLE);
+        //forceView.setVisibility(VISIBLE);
     }
     public void setStandMidi(Midi midi)
     {

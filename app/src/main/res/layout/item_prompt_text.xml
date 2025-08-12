@@ -13,7 +13,6 @@
             android:paddingHorizontal="14dp"
             android:paddingVertical="10dp"
             android:text="prompt"
-            android:textColor="@color/black"
             android:textSize="16sp"
             android:textIsSelectable="true"
             app:layout_constraintEnd_toEndOf="parent"

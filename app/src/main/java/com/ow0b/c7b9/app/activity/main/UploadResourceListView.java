@@ -36,6 +36,11 @@ public class UploadResourceListView extends LinearLayout
     }
 
     public final List<Object> resources = new ArrayList<>();
+    public void clear()
+    {
+        removeAllViews();
+        resources.clear();
+    }
     public void addResource(Activity activity, Midi midi)
     {
         View item = LayoutInflater.from(context).inflate(R.layout.item_upload_midi, this, false);

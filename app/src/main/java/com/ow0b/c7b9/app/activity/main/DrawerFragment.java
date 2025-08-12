@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -28,11 +27,13 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.ow0b.c7b9.app.AccountOptionsActivity;
 import com.ow0b.c7b9.app.LoginActivity;
 import com.ow0b.c7b9.app.R;
+import com.ow0b.c7b9.app.activity.main.chat.ChatContextView;
 import com.ow0b.c7b9.app.util.ApiCallback;
 import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.Toast;
@@ -43,6 +44,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class DrawerFragment extends Fragment
 {
@@ -50,7 +52,7 @@ public class DrawerFragment extends Fragment
     public String TAG = "侧边栏";
     private ConstraintLayout fragmentHeader;
     private ImageView userAvatar;
-    private TextView username;
+    private TextView username, token;
     private ListView conversationsList;
     private HorizontalScrollView toolScroll;
     private ConversationsAdapter conversationsAdapter;
@@ -70,15 +72,18 @@ public class DrawerFragment extends Fragment
         fragmentHeader = view.findViewById(R.id.fragment_header);
         userAvatar = view.findViewById(R.id.fragment_user_avatar);
         username = view.findViewById(R.id.fragment_username);
+        token = view.findViewById(R.id.fragment_token);
         conversationsList = view.findViewById(R.id.conversations_list);
-        toolScroll = view.findViewById(R.id.fragment_drawer_tool_scroll);
+        //toolScroll = view.findViewById(R.id.fragment_drawer_tool_scroll);
         sharedPreferences = ApiClient.getSharedPreferences(getContext());
 
+        /*
         toolScroll.setOnTouchListener((v, event) ->
         {
             v.getParent().requestDisallowInterceptTouchEvent(true);
             return false;
         });
+         */
 
         conversationsAdapter = new ConversationsAdapter(getContext(), new ArrayList<>());
         conversationsList.setAdapter(conversationsAdapter);
@@ -94,7 +99,7 @@ public class DrawerFragment extends Fragment
                 activity.welcomeDisplay.setVisibility(View.GONE);
                 activity.chatDisplay.removeAllViews();
                 Log.i(TAG, "context id:" + conversation.id);
-                activity.loadContext(conversation.id);
+                ChatUtils.loadContext(activity, new ChatContextView(activity), conversation.id);
                 activity.drawerLayout.closeDrawer(Gravity.LEFT);
             }
         });
@@ -128,7 +133,7 @@ public class DrawerFragment extends Fragment
     public void init()
     {
         loadConversations();
-        ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "api/userinfo")
+        ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "/user/info")
                 .get()
                 .callback(new ApiCallback(getActivity())
                 {
@@ -136,13 +141,16 @@ public class DrawerFragment extends Fragment
                     public void onResponse(@NonNull String response)
                     {
                         JsonObject json = JsonParser.parseString(response).getAsJsonObject();
-                        if(json.get("name") != null)
-                            getActivity().runOnUiThread(() -> username.setText(json.get("name").getAsString()));
+                        getActivity().runOnUiThread(() ->
+                        {
+                            if(json.get("name") != null)
+                                username.setText(json.get("name").getAsString());
+                            if(json.get("token") != null)
+                                token.setText("消耗token：" + json.get("token").getAsInt());
+                        });
                     }
                 })
                 .enqueue();
-        //TODO 可以本地存优化下
-        //String savedUsername = sharedPreferences.getString("username", "未登录");
 
         userAvatar.setImageResource(R.drawable.ic_user_avatar);
     }
@@ -166,7 +174,7 @@ public class DrawerFragment extends Fragment
         delete.setOnClickListener(v ->
         {
             popupWindow.dismiss();
-            ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "api/context")
+            ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "/context")
                     .parameter("id", String.valueOf(id))
                     .method("DELETE")
                     .callback(new ApiCallback(getActivity())
@@ -213,7 +221,7 @@ public class DrawerFragment extends Fragment
 
                         JsonArray body = new JsonArray();
                         body.add(unit);
-                        ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "api/conversation")
+                        ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "/conversations")
                                 .parameter("id", String.valueOf(id))
                                 .method("PUT", body)
                                 .callback(new ApiCallback(getActivity())
@@ -285,7 +293,7 @@ public class DrawerFragment extends Fragment
     }
     private void loadConversationsFromWeb()
     {
-        ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "api/conversation")
+        ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "/conversations")
                 .get()
                 .callback(new ApiCallback(getActivity())
                 {
@@ -309,22 +317,21 @@ public class DrawerFragment extends Fragment
     private void loadConversations(String response)
     {
         JsonObject json = JsonParser.parseString(response).getAsJsonObject();
-        if(json.get("data") != null)
+        getActivity().runOnUiThread(() ->
         {
-            JsonArray infos = json.get("data").getAsJsonArray();
-            getActivity().runOnUiThread(() ->
+            conversationsAdapter.conversations.clear();
+            for(Map.Entry<String, JsonElement> entry : json.entrySet())
             {
-                conversationsAdapter.conversations.clear();
-                infos.forEach(element ->
+                try
                 {
-                    JsonObject obj = element.getAsJsonObject();
-                    int id = obj.get("id").getAsInt();
-                    String refer = obj.get("refer").getAsString();
+                    int id = Integer.parseInt(entry.getKey());
+                    String refer = entry.getValue().getAsString();
                     conversationsAdapter.conversations.add(new Conversation(id, refer));
-                });
-                conversationsAdapter.notifyDataSetChanged();
-            });
-        }
+                }
+                catch (NumberFormatException ignore) { }
+            }
+            conversationsAdapter.notifyDataSetChanged();
+        });
     }
 
     private boolean isLoggedIn()

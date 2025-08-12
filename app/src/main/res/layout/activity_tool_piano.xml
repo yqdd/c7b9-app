@@ -42,21 +42,65 @@
                     android:layout_height="wrap_content"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
-                <ImageButton
-                        android:src="@drawable/btn_piano_list"
+                <LinearLayout
+                        android:background="@drawable/bg_chat"
+                        android:backgroundTint="@color/red"
                         android:id="@+id/piano_record_list_button"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:layout_marginEnd="5dp"
-                        android:backgroundTint="@color/empty"
-                        app:tint="@color/black" />
-                <ImageButton
-                        android:src="@drawable/btn_piano_save"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical">
+                    <ImageButton
+                            android:src="@drawable/btn_piano_list"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_marginEnd="5dp"
+                            android:backgroundTint="@color/empty"
+                            app:tint="@color/black" />
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="列表"
+                            android:textSize="18sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                        android:background="@drawable/bg_chat"
                         android:id="@+id/piano_record_save_button"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:backgroundTint="@color/empty"
-                        app:tint="@color/black" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical">
+                    <ImageButton
+                            android:src="@drawable/btn_piano_save"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:backgroundTint="@color/empty"
+                            app:tint="@color/black" />
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="保存"
+                            android:textSize="18sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                        android:background="@drawable/bg_chat"
+                        android:id="@+id/piano_record_metronome_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical">
+                    <ImageButton
+                            android:src="@drawable/btn_piano_save"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:backgroundTint="@color/empty"
+                            app:tint="@color/black" />
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="节拍器"
+                            android:textSize="18sp" />
+                </LinearLayout>
+
 
             </LinearLayout>
 
