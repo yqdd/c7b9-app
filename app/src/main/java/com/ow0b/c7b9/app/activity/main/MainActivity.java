@@ -1,6 +1,7 @@
 package com.ow0b.c7b9.app.activity.main;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
@@ -16,6 +17,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -49,6 +51,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -58,7 +62,7 @@ public class MainActivity extends AppCompatActivity
     public FrameLayout contentFrame;
     public TextView titleText;
     public LinearLayout chatDisplay, welcomeDisplay;
-    ScrollView chatDisplayScroll;
+    public ScrollView chatDisplayScroll;
     ImageButton sendButton;
     private ImageButton recordAudioButton;
     private MaterialButton audioLLMButton, midiAnalyzeButton;
@@ -112,6 +116,8 @@ public class MainActivity extends AppCompatActivity
         newChatButton = findViewById(R.id.new_chat_button);
         contentFrame = findViewById(R.id.content_frame);
         drawerLayout = findViewById(R.id.drawer_layout);
+        ApiClient.pingServer(this);
+
 
         //TODO 用户页的滚动token数与使用时长切换
         //添加测试用的音频
@@ -127,6 +133,7 @@ public class MainActivity extends AppCompatActivity
             throw new RuntimeException(e);
         }
 
+        chatDisplayScroll.setVerticalScrollBarEnabled(false);
         chatDisplay.addOnLayoutChangeListener(new View.OnLayoutChangeListener()
         {
             @Override
@@ -177,6 +184,7 @@ public class MainActivity extends AppCompatActivity
                     if(uploadResources.resources.isEmpty())
                     {
                         //音频文件不存在则只发文本
+                        /*
                         chatDisplay.addView(new ChatContextView(this)
                         {{
                             AiTextView aiText = newAiText();
@@ -190,6 +198,7 @@ public class MainActivity extends AppCompatActivity
                                     123123
                                     """);
                         }});
+                         */
                         ChatUtils.sendMessageToAI(this, promptView, text, chatContextId, new int[0]);
                     }
                     else
@@ -207,6 +216,13 @@ public class MainActivity extends AppCompatActivity
                             });
                         });
                         //uploadResources.setVisibility(View.GONE);
+                    }
+                    if(!ApiClient.serverAlive)
+                    {
+                        chatDisplay.addView(new ChatContextView(this)
+                        {{
+                            newAiText().append("无法连接到服务器");
+                        }});
                     }
                 }
             }

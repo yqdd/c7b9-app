@@ -1,11 +1,15 @@
 package com.ow0b.c7b9.app.util;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -13,6 +17,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.ow0b.c7b9.app.R;
+import com.ow0b.c7b9.app.activity.main.MainActivity;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,6 +44,7 @@ public class ApiClient
 {
     private final static String TAG = ApiClient.class.getName();
     private final static Gson gson = new GsonBuilder().create();
+    public static boolean serverAlive = true;
     private final OkHttpClient client;
     private final SharedPreferences sharedPreferences;
     public static SharedPreferences getSharedPreferences(Context context)
@@ -80,6 +86,35 @@ public class ApiClient
     public static ApiClient getInstance(Context context, int timeout)
     {
         return new ApiClient(context, timeout);
+    }
+    public static void pingServer(Activity activity)
+    {
+        //检测服务器是否被关闭
+        ApiClient.getInstance(activity, 2).url(activity.getResources().getString(R.string.server) + "/alive")
+                .get()
+                .callback(new Callback()
+                {
+                    @Override
+                    public void onFailure(@NonNull Call call, @NonNull IOException e)
+                    {
+                        activity.runOnUiThread(() ->
+                        {
+                            View view = View.inflate(activity, R.layout.layout_server_dead, null);
+                            AlertDialog dialog = new AlertDialog.Builder(activity)
+                                    .setView(view)
+                                    .create();
+                            TextView ok = view.findViewById(R.id.server_dead_ok);
+                            ok.setOnClickListener(v -> dialog.cancel());
+
+                            dialog.show();
+                        });
+                        //设置后其他的onFailure就不会触发（特别是Toast）
+                        serverAlive = false;
+                    }
+                    @Override
+                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException { }
+                })
+                .enqueue();
     }
 
     private String url = null;
@@ -182,11 +217,12 @@ public class ApiClient
                     apiCallback.onResponse(response, body);
                 }
                 else callback.onResponse(call, response);
+                serverAlive = true;
             }
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e)
             {
-                callback.onFailure(call, e);
+                if(serverAlive) callback.onFailure(call, e);
             }
         });
     }

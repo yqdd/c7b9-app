@@ -48,9 +48,9 @@ public class AnalyzeView extends LinearLayout
     private final LineChartView force;
     //private final ViewGroup forceView;
     private final MidiChartView standMidi;
-    private final ViewGroup standMidiView;
+    private ViewGroup standMidiView;
     private final MidiChartView userMidi;
-    private final ViewGroup userMidiView;
+    private ViewGroup userMidiView;
 
     public AnalyzeView(Context context)
     {
@@ -63,12 +63,12 @@ public class AnalyzeView extends LinearLayout
         standMidi = new MidiChartView(context);
         userMidi = new MidiChartView(context) {{ setColorRed(true); }};
 
-        addView(userMidiView = MidiChartView.getView(context, userMidi));
-        addView(standMidiView = MidiChartView.getView(context, "", standMidi));
+        //addView(userMidiView = MidiChartView.getView(context, userMidi));
+        //addView(standMidiView = MidiChartView.getView(context, "", standMidi));
         //addView(forceView = LineChartView.getView(context, force));
         addView(speedView = BarChartView.getView(context, speed));
-        userMidiView.setVisibility(View.GONE);
-        standMidiView.setVisibility(View.GONE);
+        //userMidiView.setVisibility(View.GONE);
+        //standMidiView.setVisibility(View.GONE);
         //forceView.setVisibility(View.GONE);
         speedView.setVisibility(View.GONE);
 
