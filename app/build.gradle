@@ -9,7 +9,6 @@ plugins {
 android {
     namespace 'com.ow0b.c7b9.app'
     compileSdk 35
-    viewBinding { enable = true }
 
     defaultConfig {
         applicationId "com.ow0b.c7b9.app"
@@ -40,9 +39,6 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
-    implementation "com.google.dagger:hilt-android:2.57.1"
-    implementation "com.google.dagger:hilt-compiler:2.57.1"
-
     implementation 'io.noties.markwon:core:4.6.2'
     implementation 'io.noties.markwon:html:4.6.2'
     implementation 'io.noties.markwon:syntax-highlight:4.6.2'
