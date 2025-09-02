@@ -146,7 +146,7 @@
                     android:id="@+id/upload_bar_scroll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-                <com.ow0b.c7b9.app.activity.main.UploadResourceListView
+                <com.ow0b.c7b9.app.view.UploadResourceListView
                         android:id="@+id/upload_bar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -244,7 +244,7 @@
 
     <fragment
             android:id="@+id/fragment_drawer"
-            android:name="com.ow0b.c7b9.app.activity.main.DrawerFragment"
+            android:name="com.ow0b.c7b9.app.old.activity.main.DrawerFragment"
             android:layout_width="300dp"
             android:layout_height="match_parent"
             android:layout_gravity="start" />
