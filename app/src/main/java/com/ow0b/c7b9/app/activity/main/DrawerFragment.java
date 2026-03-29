@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -26,14 +27,23 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import com.ow0b.c7b9.app.AccountOptionsActivity;
 import com.ow0b.c7b9.app.LoginActivity;
 import com.ow0b.c7b9.app.R;
+import com.ow0b.c7b9.app.activity.chord.ChordComposeActivity;
+import com.ow0b.c7b9.app.activity.leaderboard.LeaderboardActivity;
 import com.ow0b.c7b9.app.activity.main.chat.ChatContextView;
+import com.ow0b.c7b9.app.activity.metronome.MetronomeActivity;
+import com.ow0b.c7b9.app.activity.practise.PractiseActivity;
+import com.ow0b.c7b9.app.activity.rhythm.RhythmActivity;
+import com.ow0b.c7b9.app.databinding.FragmentDrawerBinding;
 import com.ow0b.c7b9.app.util.ApiCallback;
 import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.Toast;
@@ -44,17 +54,20 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class DrawerFragment extends Fragment
 {
+    private static final Gson gson = new GsonBuilder().serializeNulls().create();
     public static DrawerFragment INSTANCE;
+    private FragmentDrawerBinding binding;
     public String TAG = "侧边栏";
     private ConstraintLayout fragmentHeader;
     private ImageView userAvatar;
     private TextView username, token;
     private ListView conversationsList;
-    private HorizontalScrollView toolScroll;
     private ConversationsAdapter conversationsAdapter;
     private SharedPreferences sharedPreferences;
 
@@ -67,23 +80,16 @@ public class DrawerFragment extends Fragment
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
         INSTANCE = this;
-        View view = inflater.inflate(R.layout.fragment_drawer, container, false);
+        binding = FragmentDrawerBinding.inflate(inflater, container, false);
+        View view = binding.getRoot();
+
 
         fragmentHeader = view.findViewById(R.id.fragment_header);
         userAvatar = view.findViewById(R.id.fragment_user_avatar);
         username = view.findViewById(R.id.fragment_username);
         token = view.findViewById(R.id.fragment_token);
         conversationsList = view.findViewById(R.id.conversations_list);
-        //toolScroll = view.findViewById(R.id.fragment_drawer_tool_scroll);
         sharedPreferences = ApiClient.getSharedPreferences(getContext());
-
-        /*
-        toolScroll.setOnTouchListener((v, event) ->
-        {
-            v.getParent().requestDisallowInterceptTouchEvent(true);
-            return false;
-        });
-         */
 
         conversationsAdapter = new ConversationsAdapter(getContext(), new ArrayList<>());
         conversationsList.setAdapter(conversationsAdapter);
@@ -174,16 +180,19 @@ public class DrawerFragment extends Fragment
         delete.setOnClickListener(v ->
         {
             popupWindow.dismiss();
-            ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "/context")
+            ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "/context/delete")
+                    .get()
                     .parameter("id", String.valueOf(id))
-                    .method("DELETE")
                     .callback(new ApiCallback(getActivity())
                     {
                         @Override
                         public void onResponse(String response)
                         {
-                            getActivity().runOnUiThread(() -> Toast.showInfo(getContext(), "删除成功"));
-                            loadConversations();
+                            getActivity().runOnUiThread(() ->
+                            {
+                                if(ApiClient.check(getContext(), response).equals("error")) return;
+                                loadConversations();
+                            });
                         }
                     })
                     .enqueue();
@@ -215,22 +224,20 @@ public class DrawerFragment extends Fragment
                     String newName = editText.getText().toString().trim();
                     if (!newName.isEmpty())
                     {
-                        JsonObject unit = new JsonObject();
-                        unit.addProperty("id", id);
-                        unit.addProperty("refer", newName);
-
-                        JsonArray body = new JsonArray();
-                        body.add(unit);
-                        ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "/conversations")
+                        ApiClient.getInstance(getContext()).url(getResources().getString(R.string.server) + "/context/rename")
+                                .get()
                                 .parameter("id", String.valueOf(id))
-                                .method("PUT", body)
+                                .parameter("name", newName)
                                 .callback(new ApiCallback(getActivity())
                                 {
                                     @Override
                                     public void onResponse(String response)
                                     {
-                                        getActivity().runOnUiThread(() -> Toast.showInfo(getContext(), "重命名成功"));
-                                        loadConversations();
+                                        getActivity().runOnUiThread(() ->
+                                        {
+                                            if(ApiClient.check(getContext(), response).equals("error")) return;
+                                            loadConversations();
+                                        });
                                     }
                                 })
                                 .enqueue();
@@ -316,16 +323,20 @@ public class DrawerFragment extends Fragment
     }
     private void loadConversations(String response)
     {
-        JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+        Map<String, String> map = gson.fromJson(response, TypeToken.getParameterized(Map.class, String.class, String.class).getType());
+        List<Map.Entry<String, String>> conv = map.entrySet()
+                .stream()
+                .sorted((m1, m2) -> -Integer.compare(Integer.parseInt(m1.getKey()), Integer.parseInt(m2.getKey())))
+                .collect(Collectors.toList());
         getActivity().runOnUiThread(() ->
         {
             conversationsAdapter.conversations.clear();
-            for(Map.Entry<String, JsonElement> entry : json.entrySet())
+            for(Map.Entry<String, String> entry : conv)
             {
                 try
                 {
                     int id = Integer.parseInt(entry.getKey());
-                    String refer = entry.getValue().getAsString();
+                    String refer = entry.getValue();
                     conversationsAdapter.conversations.add(new Conversation(id, refer));
                 }
                 catch (NumberFormatException ignore) { }

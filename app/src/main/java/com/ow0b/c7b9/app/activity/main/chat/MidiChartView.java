@@ -1,40 +1,55 @@
 package com.ow0b.c7b9.app.activity.main.chat;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.VelocityTracker;
-import android.view.View;
-import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.OverScroller;
-import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatButton;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import com.ow0b.c7b9.app.R;
 import com.ow0b.c7b9.app.activity.main.MainActivity;
+import com.ow0b.c7b9.app.util.ApiCallback;
+import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.ParaType;
-import com.ow0b.c7b9.app.util.midi.Midi;
 import com.ow0b.c7b9.app.util.midi.Note;
+import com.ow0b.c7b9.app.util.midi.NoteGroup;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+
+import okhttp3.Call;
 
 public class MidiChartView extends LinearLayout implements PlayProgressBackground
 {
-    private Paint notePaint, scrollBarPaint, recordPaint;
+    private static final String TAG = "MidiChartView";
+    private static final Gson gson = new GsonBuilder().serializeNulls().create();
+    private Paint notePaint, scrollBarPaint, recordPaint, strPaint;
 
-    private Midi midi, red;
+    public List<Note> notes;
+    private List<Note> wrongs;
+    private boolean error;
     private float keyHeight = 4; // 每个音高的高度（像素）
     private float timeWidth = -1; // 每个时间单位的宽度（像素）
     private float minTimeWidth = 1; // 最小时间单位宽度
-    private float maxTimeWidth = 400; // 最大时间单位宽度
+    //private float maxTimeWidth = 400; // 最大时间单位宽度
 
     private float offsetX = 0; // 当前水平滚动偏移
     private float lastTouchX = 0; // 上一次触摸位置
@@ -49,7 +64,7 @@ public class MidiChartView extends LinearLayout implements PlayProgressBackgroun
         super(context);
         int dp10 = ParaType.toDP(this, 10);
         setOrientation(LinearLayout.VERTICAL);
-        setBackground(context.getDrawable(R.drawable.bg_chat));
+        setBackgroundColor(context.getColor(R.color.empty));         //context.getDrawable(R.drawable.bg_chat)
         setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT)
@@ -57,7 +72,7 @@ public class MidiChartView extends LinearLayout implements PlayProgressBackgroun
             bottomMargin = dp10;
             leftMargin = dp10;
         }});
-        setPadding(dp10, dp10, dp10, dp10);
+        //setPadding(dp10, dp10, dp10, dp10);
         /*
         if (text != null)
         {
@@ -75,27 +90,69 @@ public class MidiChartView extends LinearLayout implements PlayProgressBackgroun
 
         recordPaint = new Paint();
         recordPaint.setColor(getResources().getColor(R.color.translucent_gray));
+
+        strPaint = new Paint();
+        strPaint.setStrokeWidth(30f);
+        strPaint.setColor(getResources().getColor(R.color.dark_gray));
         // 初始化 Scroller
         scroller = new OverScroller(getContext());
         // 初始化手势检测器
         scaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleGestureListener());
-
-
-        setMidi(new Midi()
-        {{
-            totalTime = 41;
-            notes.add(new Note(null, 60, 0, 20) {{ end = 1; }});
-            notes.add(new Note(null, 60, 1, 20) {{ end = 2; }});
-            notes.add(new Note(null, 66, 2, 20) {{ end = 3; }});
-            notes.add(new Note(null, 26, 35, 20) {{ end = 41; }});
-            notes.add(new Note(null, 40, 40, 20) {{ end = 41; }});
-        }});
-        setRedMidi(new Midi()
-        {{
-            totalTime = 5;
-            notes.add(new Note(null, 0, 0, 20) {{ end = 1; }});
-            notes.add(new Note(null, 127, 1, 20) {{ end = 2; }});
-        }});
+    }
+    public MidiChartView(Context context, String idStr, boolean refMidi)
+    {
+        this(context);
+        try
+        {
+            invalidate();
+            int id = Integer.parseInt(idStr);
+            ApiClient.getInstance(context).url(getResources().getString(R.string.server) + "/audio/" + (refMidi ? "ref" : "midi"))
+                    .cache()
+                    .get()
+                    .parameter("id", String.valueOf(id))
+                    .callback(new ApiCallback(context)
+                    {
+                        @Override
+                        public void onResponse(@NonNull String response)
+                        {
+                            try
+                            {
+                                JsonObject obj = JsonParser.parseString(response).getAsJsonObject();
+                                JsonElement json1 = obj.get("data"), json2 = obj.get("wrongs");
+                                notes = new ArrayList<>(gson.fromJson(json1, TypeToken.getParameterized(List.class, Note.class).getType()));
+                                wrongs = json2 != null && !json2.isJsonNull() ? gson.fromJson(json2, TypeToken.getParameterized(List.class, Note.class).getType()) : List.of();
+                                if(context instanceof Activity activity)
+                                    activity.runOnUiThread(() -> requestLayout());  // 重新计算布局
+                                invalidate(); // 重新绘制视图
+                            }
+                            catch (Exception e)
+                            {
+                                error = true;
+                                invalidate();
+                                Log.e("BarChartView", "", e);
+                            }
+                        }
+                        @Override
+                        public void onFailure(@NonNull Call call, @NonNull IOException e)
+                        {
+                            super.onFailure(call, e);
+                            error = true;
+                            invalidate();
+                            Log.e("BarChartView", "", e);
+                        }
+                    })
+                    .enqueue();
+        }
+        catch (NumberFormatException e)
+        {
+            error = true;
+            invalidate();
+            Log.e("MidiChartView", e.getMessage());
+        }
+    }
+    public float totalTime()
+    {
+        return notes == null || notes.isEmpty() ? 0 : (float) notes.stream().mapToDouble(n -> n.end).max().orElseThrow();
     }
 
     private boolean colorRed = false;
@@ -103,19 +160,6 @@ public class MidiChartView extends LinearLayout implements PlayProgressBackgroun
     {
         colorRed = value;
         if(colorRed) scrollBarPaint.setColor(getResources().getColor(R.color.light_red));
-    }
-
-    public void setMidi(Midi midi)
-    {
-        this.midi = midi;
-        requestLayout(); // 重新计算布局
-        invalidate(); // 重新绘制视图
-    }
-    public void setRedMidi(Midi midi)
-    {
-        this.red = midi;
-        requestLayout(); // 重新计算布局
-        invalidate(); // 重新绘制视图
     }
     float process = 0;
     @Override
@@ -128,13 +172,15 @@ public class MidiChartView extends LinearLayout implements PlayProgressBackgroun
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
         Log.i("TAG", "setMidi: " + timeWidth + " " + getWidth() + " " + horizontalPadding());
+        float totalTime = totalTime();
         // 根据最大时长设置宽度
-        int desiredWidth = (int) (midi.totalTime * timeWidth); // 每个时间单位宽度动态调整
+        int desiredWidth = (int) (totalTime * timeWidth); // 每个时间单位宽度动态调整
         float desiredHeight = 127 * keyHeight + scrollBarHeight + verticalPadding(); // MIDI 音高范围 + 滚动条高度
 
         int width = resolveSize(desiredWidth, widthMeasureSpec);
         int height = resolveSize((int) desiredHeight, heightMeasureSpec);
-        if(timeWidth <= 0) timeWidth = (width - getPaddingLeft() - horizontalPadding()) / midi.totalTime;
+        if(totalTime != 0 && timeWidth <= 0)
+            timeWidth = (width - getPaddingLeft() - horizontalPadding()) / totalTime;
 
         setMeasuredDimension(width, height);
     }
@@ -145,39 +191,48 @@ public class MidiChartView extends LinearLayout implements PlayProgressBackgroun
         super.onDraw(canvas);
         int pLeft = getPaddingLeft(), pRight = getPaddingRight(),
                 pTop = getPaddingTop(), pBottom = getPaddingBottom();
+        float height = 127 * keyHeight, width = getWidth() - pLeft - pRight;
+        if (notes == null)
+        {
+            canvas.drawText("数据加载中", width / 2, height / 2, strPaint);
+            return;
+        }
+        if(error)
+        {
+            canvas.drawText("出现未知错误", width / 2, height / 2, strPaint);
+            return;
+        }
 
         // 绘制滚动条（在clip之前）
         drawScrollBar(canvas);
         // 使用水平偏移量绘制音符
         //canvas.clipRect(pLeft, pTop, getWidth() - pRight, getHeight() - pBottom);
         canvas.translate(-offsetX, 0);
-        canvas.drawRect(0, 0, process * midi.totalTime * timeWidth, getHeight(), recordPaint);
+        canvas.drawRect(0, 0, process * totalTime() * timeWidth, getHeight(), recordPaint);
 
         // 绘制音符
-        for (Note note : midi.notes)
+        for (Note note : notes)
         {
             float left = note.start * timeWidth + pLeft; // 每个时间单位宽度动态调整
-            float top = (127 - note.pitch) * keyHeight + pTop; // MIDI 音高范围：0-127
-            float right = left + (note.end - note.start) * timeWidth + pLeft;
-            float bottom = top + keyHeight;
-
-            notePaint.setColor(getResources().getColor(R.color.dark_gray));
+            float top = (127 - note.pitch) * keyHeight + pTop + 1; // MIDI 音高范围：0-127
+            float right = left + (note.end - note.start) * timeWidth;
+            float bottom = top + keyHeight - 1;
+            notePaint.setColor(getResources().getColor(R.color.gray));
             canvas.drawRect(left, top, right, bottom, notePaint);
         }
-        if(red != null)
+        if(wrongs != null)
         {
-            for (Note note : red.notes)
+            for (Note note : wrongs)
             {
                 float left = note.start * timeWidth + pLeft; // 每个时间单位宽度动态调整
                 float top = (127 - note.pitch) * keyHeight + pTop; // MIDI 音高范围：0-127
-                float right = left + (note.end - note.start) * timeWidth + pLeft;
+                float right = left + (note.end - note.start) * timeWidth;
                 float bottom = top + keyHeight;
 
-                notePaint.setColor(getResources().getColor(R.color.light_red));
+                notePaint.setColor(getResources().getColor(R.color.high_light_red));
                 canvas.drawRect(left, top, right, bottom, notePaint);
             }
         }
-
         // 恢复画布状态
         canvas.translate(offsetX, 0);
     }
@@ -292,7 +347,7 @@ public class MidiChartView extends LinearLayout implements PlayProgressBackgroun
     /// 计算内容总宽度
     private float computeContentWidth()
     {
-        return (float) midi.notes.stream().mapToDouble(n -> n.end).max().orElse(0) * timeWidth;
+        return (float) totalTime() * timeWidth;        //midi.notes.stream().mapToDouble(n -> n.end).max().orElse(0)
     }
 
     // 手势监听器，用于处理双指缩放
@@ -308,8 +363,8 @@ public class MidiChartView extends LinearLayout implements PlayProgressBackgroun
                 timeWidth *= scale;
                 //keyHeight *= detector.getScaleFactor();
                 // 限制 timeWidth 的最小值和最大值
-                timeWidth = Math.max(Math.max(minTimeWidth, (getWidth() - getPaddingLeft() - horizontalPadding()) / midi.totalTime),
-                        Math.min(timeWidth, maxTimeWidth));
+                //timeWidth = Math.max(Math.max(minTimeWidth, (getWidth() - getPaddingLeft() - horizontalPadding()) / totalTime()),
+                //        timeWidth);     //Math.min(, maxTimeWidth)
             }
 
             // 更新偏移量以保持视图中心不变

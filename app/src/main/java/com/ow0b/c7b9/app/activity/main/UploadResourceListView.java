@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -16,6 +15,7 @@ import com.ow0b.c7b9.app.R;
 import com.ow0b.c7b9.app.activity.piano.MidiPlayer;
 import com.ow0b.c7b9.app.util.midi.Midi;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -41,7 +41,7 @@ public class UploadResourceListView extends LinearLayout
         removeAllViews();
         resources.clear();
     }
-    public void addResource(Activity activity, Midi midi)
+    public void addMidi(Activity activity, Midi midi)
     {
         View item = LayoutInflater.from(context).inflate(R.layout.item_upload_midi, this, false);
         TextView text = item.findViewById(R.id.resource_indicator);
@@ -51,28 +51,18 @@ public class UploadResourceListView extends LinearLayout
         initResource(midi, item, v ->
                 {
                     if(MidiPlayer.isPlaying()) MidiPlayer.stop();
-                    else MidiPlayer.play(activity, midi);
+                    else MidiPlayer.playInExecutor(activity, midi);
                 },
-                v -> item.setVisibility(View.GONE),
-                v -> AudioPlayer.cancel(),
-                v ->
-                {
-                    if(AudioPlayer.isPlaying())
-                    {
-                        MidiPlayer.stop();
-                        MidiPlayer.play(activity, midi);
-                    }
-                    else MidiPlayer.stop();
-                });
+                v -> item.setVisibility(View.GONE));
     }
 
     private final HashSet<ImageButton> audioPlayingButtons = new HashSet<>();
-    public void addResource(String audioFileName)
+    public void addAudio(Activity activity, File file)
     {
         View item = LayoutInflater.from(context).inflate(R.layout.item_upload_audio, this, false);
         addView(item);
-        resources.add(audioFileName);
-        initResource(audioFileName, item, v ->
+        resources.add(file);
+        initResource(file, item, v ->
                 {
                     if(AudioPlayer.isPlaying())
                     {
@@ -82,8 +72,8 @@ public class UploadResourceListView extends LinearLayout
                     }
                     else
                     {
-                        AudioPlayer.playAudio(getContext(), audioFileName, v.progressBar, () ->
-                                v.playButton.setImageResource(R.drawable.btn_record_play));
+                        AudioPlayer.setComponent(v.progressBar, null);
+                        AudioPlayer.playAudio(activity, file, 0, () -> v.playButton.setImageResource(R.drawable.btn_record_play));
                         v.playButton.setImageResource(R.drawable.btn_stop_play_record);
                         audioPlayingButtons.add(v.playButton);
                     }
@@ -91,30 +81,41 @@ public class UploadResourceListView extends LinearLayout
                 v ->
                 {
                     item.setVisibility(View.GONE);
-                    getContext().deleteFile(audioFileName);
-                },
-                v -> AudioPlayer.cancel(),
-                v ->
+                    file.delete();
+                });
+    }
+    public void addHistory(Activity activity, File file, int aid)
+    {
+        View item = LayoutInflater.from(context).inflate(R.layout.item_upload_history, this, false);
+        addView(item);
+        resources.add(aid);
+        initResource(aid, item, v ->
                 {
                     if(AudioPlayer.isPlaying())
                     {
                         AudioPlayer.stopPlayAudio();
-                        AudioPlayer.playAudio(getContext(), audioFileName, v.progressBar, () ->
-                                v.playButton.setImageResource(R.drawable.btn_record_play));
+                        audioPlayingButtons.forEach(b -> b.setImageResource(R.drawable.btn_history_play));
+                        audioPlayingButtons.clear();
                     }
                     else
                     {
-                        AudioPlayer.stopPlayAudio();
-                        v.playButton.setImageResource(R.drawable.btn_record_play);
+                        AudioPlayer.setComponent(v.progressBar, null);
+                        AudioPlayer.playAudio(activity, file, 0, () -> v.playButton.setImageResource(R.drawable.btn_history_play));
+                        v.playButton.setImageResource(R.drawable.btn_stop_play_history);
+                        audioPlayingButtons.add(v.playButton);
                     }
+                },
+                v ->
+                {
+                    item.setVisibility(View.GONE);
+                    file.delete();
                 });
     }
 
     record ResourceViews(TextView indicator, SeekBar progressBar, ImageButton playButton, ImageButton deleteButton) {}
     @SuppressLint("ClickableViewAccessibility")
     private void initResource(Object data, View view,
-                              Consumer<ResourceViews> play, Consumer<ResourceViews> delete,
-                              Consumer<ResourceViews> tracking, Consumer<ResourceViews> reset)
+                              Consumer<ResourceViews> play, Consumer<ResourceViews> delete)
     {
         TextView indicator = view.findViewById(R.id.resource_indicator);
         SeekBar progressBar = view.findViewById(R.id.resource_progress_bar);
@@ -133,18 +134,6 @@ public class UploadResourceListView extends LinearLayout
             //防止ScrollView拦截事件
             v.getParent().requestDisallowInterceptTouchEvent(true);
             return false;
-        });
-        progressBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
-        {
-            @Override public void onProgressChanged(SeekBar seekBar, int i, boolean b) { }
-            @Override public void onStartTrackingTouch(SeekBar seekBar)
-            {
-                tracking.accept(views);
-            }
-            @Override public void onStopTrackingTouch(SeekBar seekBar)
-            {
-                reset.accept(views);
-            }
         });
     }
 }

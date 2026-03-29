@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <!-- 播放和弦的按钮 -->
+        <Button
+                android:id="@+id/play_chord_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Play Chord" />
+
+        <!-- 显示和弦的TextView -->
+        <TextView
+                android:id="@+id/chord_display"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Your chord will appear here"
+                android:textSize="16sp" />
+
+        <!-- 根音按钮容器：12个按钮在代码中动态创建 -->
+        <LinearLayout
+                android:id="@+id/note_buttons_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+            <!-- 根音按钮将在代码中添加 -->
+        </LinearLayout>
+
+        <!-- 音程按钮容器：音程按钮在代码中动态创建 -->
+        <LinearLayout
+                android:id="@+id/interval_buttons_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+            <!-- 音程按钮将在代码中添加 -->
+        </LinearLayout>
+
+        <!-- 提交和弦的按钮 -->
+        <Button
+                android:id="@+id/submit_chord_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Submit Chord"
+                android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+</ScrollView>

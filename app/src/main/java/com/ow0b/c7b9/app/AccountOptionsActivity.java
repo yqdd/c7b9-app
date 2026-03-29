@@ -27,6 +27,7 @@ public class AccountOptionsActivity extends AppCompatActivity
         changeUsernameButton = findViewById(R.id.change_username_button);
         logoutButton = findViewById(R.id.logout_button);
 
+        findViewById(R.id.back).setOnClickListener(v -> finish());
         changeUsernameButton.setOnClickListener(v ->
         {
             Toast.showInfo(this, "暂不支持此功能");

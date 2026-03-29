@@ -4,7 +4,8 @@
         android:layout_height="match_parent"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:fitsSystemWindows="false">
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/fragment_header"
@@ -49,6 +50,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
+                    android:textColor="@color/dark_gray"
                     android:text="未登录"
                     android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -62,10 +64,11 @@
                         android:layout_height="wrap_content"
                         android:textSize="11sp"
                         android:textColor="@color/gray"
-                        android:text="使用时长：1422h   消耗token：2010293"
+                        android:text="消耗token：0"
                         android:textAppearance="?android:attr/textAppearanceLarge" />
             </LinearLayout>
         </LinearLayout>
+
 
         <ImageButton
                 android:id="@+id/fragment_scan"
@@ -73,6 +76,7 @@
                 android:layout_width="35dp"
                 android:layout_height="35dp"
                 android:layout_marginEnd="5dp"
+                android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"/>
@@ -116,50 +120,9 @@
                 android:layout_height="0dp"
                 android:dividerHeight="1dp"
                 app:layout_constraintTop_toBottomOf="@id/conversations_label"
-                app:layout_constraintStart_toStartOf="parent"/>
-        <!--app:layout_constraintBottom_toTopOf="@id/fragment_drawer_tool_scroll"-->
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
-        <!--
-        <HorizontalScrollView
-                android:id="@+id/fragment_drawer_tool_scroll"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:scrollbars="none"
-                app:layout_constraintTop_toBottomOf="@id/conversations_list"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent">
-            <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent">
-                <TextView
-                        style="@style/fragment_drawer_tool_scroll_button"
-                        android:text="练耳" />
-                <TextView
-                        style="@style/fragment_drawer_tool_scroll_button"
-                        android:text="班级"/>
-                <TextView
-                        style="@style/fragment_drawer_tool_scroll_button"
-                        android:text="节拍器"/>
-                <TextView
-                        style="@style/fragment_drawer_tool_scroll_button"
-                        android:text="调音器"/>
-                <TextView
-                        style="@style/fragment_drawer_tool_scroll_button"
-                        android:text="AI记忆"/>
-                <TextView
-                        style="@style/fragment_drawer_tool_scroll_button"
-                        android:text="历史数据"/>
-                <TextView
-                        style="@style/fragment_drawer_tool_scroll_button"
-                        android:text="曲目搜索"/>
-                <TextView
-                        style="@style/fragment_drawer_tool_scroll_button"
-                        android:text="token排行"/>
-
-            </LinearLayout>
-
-        </HorizontalScrollView>-->
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

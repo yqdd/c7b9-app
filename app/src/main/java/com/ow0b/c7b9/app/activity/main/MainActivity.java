@@ -1,7 +1,6 @@
 package com.ow0b.c7b9.app.activity.main;
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
@@ -17,22 +16,27 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.button.MaterialButton;
 import com.ow0b.c7b9.app.R;
-import com.ow0b.c7b9.app.activity.main.chat.AiTextView;
+import com.ow0b.c7b9.app.activity.chord.ChordComposeActivity;
+import com.ow0b.c7b9.app.activity.leaderboard.LeaderboardActivity;
+import com.ow0b.c7b9.app.activity.metronome.MetronomeActivity;
 import com.ow0b.c7b9.app.activity.piano.MidiPlayer;
 import com.ow0b.c7b9.app.activity.piano.PianoToolActivity;
+import com.ow0b.c7b9.app.activity.practise.PractiseActivity;
+import com.ow0b.c7b9.app.activity.rhythm.RhythmActivity;
+import com.ow0b.c7b9.app.databinding.ActivityMainBinding;
 import com.ow0b.c7b9.app.util.ApiCallback;
 import com.ow0b.c7b9.app.util.ApiClient;
+import com.ow0b.c7b9.app.util.Toast;
 import com.ow0b.c7b9.app.util.midi.Midi;
 import com.ow0b.c7b9.app.activity.main.chat.ChatContextView;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,36 +46,30 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
 
 import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity
 {
     private static final String TAG = "MainActivity";
     private SharedPreferences sharedPreferences;
+    private ActivityMainBinding binding;
     private EditText userInput;
     public FrameLayout contentFrame;
     public TextView titleText;
     public LinearLayout chatDisplay, welcomeDisplay;
+    public ConstraintLayout chatPoster;
     public ScrollView chatDisplayScroll;
     ImageButton sendButton;
     private ImageButton recordAudioButton;
     private MaterialButton audioLLMButton, midiAnalyzeButton;
     private Button toolSelectionButton, drawerButton;
     public Button newChatButton;
-    private UploadResourceListView uploadResources;
+    public UploadResourceListView uploadResources;
     public DrawerLayout drawerLayout;
-    public int audioLLMModel = 1;        //0为无，1为Qwen，2为Gemini
-    public boolean isMidiOn = false;
+    public boolean audioLLMModel, isMidiOn = false;
     public boolean isNewChat = false;       //这个用来减少打开Fragment需要的网络请求
     public int chatContextId = -1;
     boolean isGenerating = false;
@@ -88,7 +86,7 @@ public class MainActivity extends AppCompatActivity
         {
             Midi midi = intent.getExtras().getSerializable("midi", Midi.class);
             Log.d(TAG, "onResume: " + midi);
-            if (midi != null) uploadResources.addResource(this, midi);
+            if (midi != null) uploadResources.addMidi(this, midi);
         }
     }
 
@@ -96,13 +94,14 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView((binding = ActivityMainBinding.inflate(getLayoutInflater())).getRoot());
         clearAudioCache();
         MidiPlayer.init(this);
 
         //sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
         userInput = findViewById(R.id.user_input);
         titleText = findViewById(R.id.title_text);
+        chatPoster = findViewById(R.id.chat_poster);
         chatDisplay = findViewById(R.id.chat_display);
         welcomeDisplay = findViewById(R.id.welcome_display);
         chatDisplayScroll = findViewById(R.id.chat_display_scroll);
@@ -118,20 +117,33 @@ public class MainActivity extends AppCompatActivity
         drawerLayout = findViewById(R.id.drawer_layout);
         ApiClient.pingServer(this);
 
-
-        //TODO 用户页的滚动token数与使用时长切换
         //添加测试用的音频
+        /*
+        File file = AudioRecorder.audioFile(this, "testAudio.m4a");
         try(InputStream input = getAssets().open("testAudio.m4a");
-            OutputStream output = new FileOutputStream(AudioRecorder.audioFile(this, "testAudio.m4a")))
+            OutputStream output = new FileOutputStream(file))
         {
             int b;
             while((b = input.read()) != -1) output.write(b);
-            uploadResources.addResource("testAudio.m4a");
+            uploadResources.addAudio(this, file);
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
         }
+         */
+
+        binding.fragmentDrawerToolMetronome.setOnClickListener(v ->
+                startActivity(new Intent(this, MetronomeActivity.class)));
+        binding.fragmentDrawerToolChord.setOnClickListener(v ->
+                Toast.showInfo(this, "没做好"));          //startActivity(new Intent(this, ChordComposeActivity.class))
+        binding.fragmentDrawerToolRhythm.setOnClickListener(v ->
+                Toast.showInfo(this, "没做好"));          //startActivity(new Intent(this, RhythmActivity.class))
+        binding.fragmentDrawerToolPractise.setOnClickListener(v ->
+                Toast.showInfo(this, "没做好"));          //startActivity(new Intent(this, PractiseActivity.class))
+        binding.fragmentDrawerToolLeaderboard.setOnClickListener(v ->
+                Toast.showInfo(this, "没做好"));          //startActivity(new Intent(this, LeaderboardActivity.class))
+
 
         chatDisplayScroll.setVerticalScrollBarEnabled(false);
         chatDisplay.addOnLayoutChangeListener(new View.OnLayoutChangeListener()
@@ -146,41 +158,21 @@ public class MainActivity extends AppCompatActivity
 
         sendButton.setOnClickListener(v ->
         {
-            if(isGenerating) sendMessageToAICancel();
+            if(!ApiClient.isLogin(this)) Toast.showInfo(this, "请先登录");
+            else if(isGenerating) sendMessageToAICancel();
             else
             {
                 String text = userInput.getText().toString();
                 if(!text.isEmpty())
                 {
                     welcomeDisplay.setVisibility(View.GONE);
+                    binding.toolScroll.setVisibility(View.GONE);
                     newChatButton.setVisibility(View.VISIBLE);
                     userInput.setText("");
 
                     ChatContextView promptView = new ChatContextView(this);
-                    List<FileInputStream> streams = new ArrayList<>();
-                    for(int i = 0; i < uploadResources.resources.size(); i ++)
-                    {
-                        Object res = uploadResources.resources.get(i);
-                        if(res instanceof String fileName)
-                        {
-                            File file = AudioPlayer.audioFile(this, fileName);
-                            try(FileInputStream stream = new FileInputStream(file);
-                                FileOutputStream outTest = new FileOutputStream(AudioPlayer.audioFile(this, String.valueOf(i))))
-                            {
-                                int b;
-                                while((b = stream.read()) != -1) outTest.write(b);
-                                streams.add(new FileInputStream(AudioPlayer.audioFile(this, String.valueOf(i))));
-                                promptView.newAudio(i);
-                            }
-                            catch (IOException e)
-                            {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    }
-                    promptView.newUserText().setText(text);
-                    chatDisplay.addView(promptView);
 
+                    chatDisplay.addView(promptView);
                     if(uploadResources.resources.isEmpty())
                     {
                         //音频文件不存在则只发文本
@@ -190,29 +182,34 @@ public class MainActivity extends AppCompatActivity
                             AiTextView aiText = newAiText();
                             aiText.append("""
                                     测试123
-                                    <locateAudio rid="1" skip="2" tip="点我播放音频" />
+                                    <locateAudio id="1" skip="2" tip="点我播放音频" />
                                     123123
+                                    <intent activity="节拍器" />
+                                    <intent activity="钢琴窗" />
                                     <forceChart />
-                                    <speedChart />
+                                    <speedChart id="65" />
                                     <midiChart />
                                     123123
                                     """);
                         }});
                          */
-                        ChatUtils.sendMessageToAI(this, promptView, text, chatContextId, new int[0]);
+                        promptView.newUserText().setText(text);
+                        ChatUtils.sendMessageToAI(this, promptView, text, chatContextId, null);
                     }
                     else
                     {
-                        uploadResources.clear();
-                        sendAudioToServer(streams, response ->
+                        AudioUtils.sendAudioToServer(this, aids ->
                         {
                             runOnUiThread(() ->
                             {
+                                uploadResources.clear();
+                                aids.forEach(promptView::newAudio);
                                 //chatDisplay.addView(new UserPromptView(this));     // text
                                 //JsonObject obj = JsonParser.parseString(response).getAsJsonObject();
                                 //int id = obj.get("id").getAsInt();
                                 //recordView.setId(id);
-                                //ChatUtils.sendMessageToAI(text, id);
+                                promptView.newUserText().setText(text);
+                                ChatUtils.sendMessageToAI(this, promptView, text, chatContextId, aids);
                             });
                         });
                         //uploadResources.setVisibility(View.GONE);
@@ -231,37 +228,20 @@ public class MainActivity extends AppCompatActivity
         {
             if (AudioRecorder.isRecording())
             {
-                //TODO 这里要做个删除（现在多文件要保存多个文件名删）
-                //TODO 或者上传后直接用rid保存到本地？？？？
-                String fileName = AudioRecorder.stopRecording();
-                uploadResources.addResource(fileName);
+                uploadResources.addAudio(this, AudioRecorder.stopRecording());
                 recordAudioButton.setImageResource(R.drawable.btn_record_start);
             }
             else
             {
-                AudioRecorder.startRecording(this, "record:" + Instant.now() + ".m4a");
+                AudioRecorder.startRecording(this);
                 recordAudioButton.setImageResource(R.drawable.btn_record_stop);
             }
         });
-        updateSwitchButtonState(audioLLMButton, true);
+        updateSwitchButtonState(audioLLMButton, audioLLMModel);
         audioLLMButton.setOnClickListener(v ->
         {
-            switch (audioLLMModel)
-            {
-                case 0 :
-                    audioLLMModel = 1;
-                    audioLLMButton.setText("音频理解 (QWEN)");
-                    break;
-                case 1 :
-                    audioLLMModel = 2;
-                    audioLLMButton.setText("音频理解 (GEMINI)");
-                    break;
-                case 2 :
-                    audioLLMModel = 0;
-                    audioLLMButton.setText("音频理解");
-                    break;
-            }
-            updateSwitchButtonState(audioLLMButton, audioLLMModel > 0);
+            audioLLMModel = !audioLLMModel;
+            updateSwitchButtonState(audioLLMButton, audioLLMModel);
         });
         updateSwitchButtonState(midiAnalyzeButton, isMidiOn);
         midiAnalyzeButton.setOnClickListener(v ->
@@ -279,6 +259,7 @@ public class MainActivity extends AppCompatActivity
 
         drawerButton.setOnClickListener(v ->
         {
+            userInput.clearFocus();
             drawerLayout.openDrawer(findViewById(R.id.fragment_drawer));      //findViewById(R.id.fragment_drawer)
         });
 
@@ -288,6 +269,7 @@ public class MainActivity extends AppCompatActivity
             isNewChat = true;
             titleText.setText("新对话");
             welcomeDisplay.setVisibility(View.VISIBLE);
+            binding.toolScroll.setVisibility(View.VISIBLE);
             chatDisplay.removeAllViews();
             newChatButton.setVisibility(View.GONE);
         });
@@ -313,34 +295,7 @@ public class MainActivity extends AppCompatActivity
 
 
 
-    private void sendAudioToServer(Collection<FileInputStream> streams, Consumer<String> callback)
-    {
-        int[] over = new int[1];
-        for(FileInputStream stream : streams)
-        {
-            ApiClient.getInstance(this).url(getResources().getString(R.string.server) + "/resource/upload")
-                    .method("POST", encodeAudioFileToStr(stream), "audio/m4a")
-                    .parameter("type", "audio")
-                    .callback(new ApiCallback(this)
-                    {
-                        @Override
-                        public void onResponse(String response)
-                        {
-                            try
-                            {
-                                stream.close();
-                                over[0] ++;
-                                if(over[0] == streams.size()) callback.accept(response);
-                            }
-                            catch (IOException e)
-                            {
-                                Log.e(TAG, "onResponse: ", e);
-                            }
-                        }
-                    })
-                    .enqueue();
-        }
-    }
+
     private void sendMessageToAICancel()
     {
         ApiClient.getInstance(this, 120).url(getResources().getString(R.string.server) + "/chat/cancel")
@@ -368,19 +323,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private String encodeAudioFileToStr(FileInputStream stream)
-    {
-        try
-        {
-            byte[] bytes = new byte[stream.available()];
-            int length = stream.read(bytes);
-            return Base64.getEncoder().encodeToString(Arrays.copyOf(bytes, length));
-        }
-        catch (IOException e)
-        {
-            return null;
-        }
-    }
+
 
     private void clearAudioCache()
     {

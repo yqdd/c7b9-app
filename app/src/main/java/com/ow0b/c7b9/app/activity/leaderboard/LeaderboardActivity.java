@@ -1,4 +1,4 @@
-package com.ow0b.c7b9.app;
+package com.ow0b.c7b9.app.activity.leaderboard;
 
 import android.os.Bundle;
 import android.widget.ListView;
@@ -8,7 +8,7 @@ import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.ow0b.c7b9.app.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,7 @@ public class LeaderboardActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_leaderboard);
+        setContentView(R.layout.activity_tool_leaderboard);
 
         leaderboardList = findViewById(R.id.leaderboard_list);
 

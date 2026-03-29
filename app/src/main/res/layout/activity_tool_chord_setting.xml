@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <CheckBox
+                android:id="@+id/checkbox_daxiaosan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="大小三度" />
+
+        <CheckBox
+                android:id="@+id/checkbox_jianzengsan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="减增三度" />
+
+        <CheckBox
+                android:id="@+id/checkbox_beizengjiansan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="倍增减三度" />
+
+        <CheckBox
+                android:id="@+id/checkbox_daxiaoerdu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="大小二度" />
+
+        <CheckBox
+                android:id="@+id/checkbox_chunsidu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="纯四度" />
+
+        <EditText
+                android:id="@+id/et_num_notes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="输入叠加音个数"
+                android:inputType="number" />
+
+        <Button
+                android:id="@+id/save_settings_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="保存设置"
+                android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+</ScrollView>

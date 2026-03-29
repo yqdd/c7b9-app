@@ -41,6 +41,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@drawable/bg_chat"
+                    android:textCursorDrawable="@color/empty"
+                    android:imeOptions="actionDone"
                     android:paddingVertical="6dp"
                     android:textAlignment="center"
                     android:text="100"
@@ -58,15 +60,19 @@
             android:id="@+id/metronome_beat"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="5dp"
+            android:padding="7dp"
             android:gravity="center"
             android:orientation="horizontal">
         <EditText
+                android:id="@+id/metronome_beat_n1"
                 android:inputType="numberDecimal"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
+                android:padding="3dp"
                 android:background="@drawable/bg_chat"
+                android:textCursorDrawable="@color/empty"
+                android:imeOptions="actionDone"
                 android:hint="几"
                 android:textSize="16sp"
                 android:textAlignment="center" />
@@ -78,17 +84,24 @@
                 android:text="对"
                 android:textSize="16sp"/>
         <EditText
+                android:id="@+id/metronome_beat_n2"
                 android:inputType="numberDecimal"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
+                android:padding="3dp"
                 android:background="@drawable/bg_chat"
+                android:textCursorDrawable="@color/empty"
+                android:imeOptions="actionDone"
                 android:hint="几"
                 android:textSize="16sp"
                 android:textAlignment="center" />
     </LinearLayout>
 
-    <TextView
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <TextView
             android:id="@+id/metronome_play"
             android:background="@drawable/bg_chat"
             android:backgroundTint="@color/black"
@@ -102,5 +115,27 @@
             android:textColor="@color/white"
             android:textStyle="bold"
             android:text="开始"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <View
+                android:id="@+id/metronome_play_left"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.5"
+                android:background="@color/white"
+                android:visibility="invisible"/>
+            <View
+                android:id="@+id/metronome_play_right"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.5"
+                android:background="@color/white"
+                android:visibility="invisible"/>
+
+        </LinearLayout>
+
+
+    </FrameLayout>
 
 </LinearLayout>

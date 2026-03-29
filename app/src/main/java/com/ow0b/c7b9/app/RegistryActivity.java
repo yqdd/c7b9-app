@@ -31,37 +31,9 @@ public class RegistryActivity extends AppCompatActivity
 
         registerButton.setOnClickListener(v ->
         {
-            String username = usernameInput.getText().toString();
-            String password = passwordInput.getText().toString();
-            registryUser(username, password);
+
         });
     }
 
-    private void registryUser(String username, String password)
-    {
-        ApiClient.getInstance(this).url(getResources().getString(R.string.server) + "/registry")
-                .parameter("username", username)
-                .parameter("password", Encryption.encryptMD5(password))
-                .get()
-                .callback(new ApiCallback(this)
-                {
-                    @Override
-                    public void onResponse(Response resp, String body)
-                    {
-                        runOnUiThread(() ->
-                        {
-                            ApiClient.check(RegistryActivity.this, body);
-                            if(resp.code() == 200)
-                            {
-                                Intent intent = new Intent(RegistryActivity.this, LoginActivity.class);
-                                Toast.showInfo(RegistryActivity.this, "注册成功");
-                                startActivity(intent);
-                            }
-                            else Toast.showInfo(RegistryActivity.this, "注册失败，用户名已存在");
-                        });
-                    }
-                })
-                .enqueue();
 
-    }
 }

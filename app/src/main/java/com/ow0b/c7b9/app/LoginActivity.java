@@ -13,6 +13,7 @@ import com.ow0b.c7b9.app.activity.main.MainActivity;
 import com.ow0b.c7b9.app.util.ApiCallback;
 import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.Encryption;
+import com.ow0b.c7b9.app.util.Toast;
 
 import okhttp3.Response;
 
@@ -20,7 +21,7 @@ public class LoginActivity extends AppCompatActivity
 {
     private EditText usernameInput, passwordInput;
     private Button loginButton;
-    private TextView registerButton;
+    private TextView registryButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -31,8 +32,9 @@ public class LoginActivity extends AppCompatActivity
         usernameInput = findViewById(R.id.username_input);
         passwordInput = findViewById(R.id.password_input);
         loginButton = findViewById(R.id.login_button);
-        registerButton = findViewById(R.id.register_button);
+        registryButton = findViewById(R.id.registry_button);
 
+        findViewById(R.id.back).setOnClickListener(v -> finish());
         loginButton.setOnClickListener(v ->
         {
             String username = usernameInput.getText().toString();
@@ -40,10 +42,11 @@ public class LoginActivity extends AppCompatActivity
             loginUser(username, password);
         });
 
-        registerButton.setOnClickListener(v ->
+        registryButton.setOnClickListener(v ->
         {
-            Intent intent = new Intent(LoginActivity.this, RegistryActivity.class);
-            startActivity(intent);
+            String username = usernameInput.getText().toString();
+            String password = passwordInput.getText().toString();
+            registryUser(username, password);
         });
     }
 
@@ -68,6 +71,31 @@ public class LoginActivity extends AppCompatActivity
                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                 startActivity(intent);
                             }
+                        });
+                    }
+                })
+                .enqueue();
+    }
+    private void registryUser(String username, String password)
+    {
+        ApiClient.getInstance(this).url(getResources().getString(R.string.server) + "/registry")
+                .parameter("username", username)
+                .parameter("password", Encryption.encryptMD5(password))
+                .get()
+                .callback(new ApiCallback(this)
+                {
+                    @Override
+                    public void onResponse(Response resp, String body)
+                    {
+                        runOnUiThread(() ->
+                        {
+                            ApiClient.check(LoginActivity.this, body);
+                            if(resp.code() == 200)
+                            {
+                                Toast.showInfo(LoginActivity.this, "注册成功");
+                                loginUser(username, password);
+                            }
+                            else Toast.showInfo(LoginActivity.this, "注册失败，用户名已存在");
                         });
                     }
                 })

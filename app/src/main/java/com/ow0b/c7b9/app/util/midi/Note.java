@@ -23,6 +23,6 @@ public class Note implements Serializable
     @Override
     public String toString()
     {
-        return note;
+        return note + ": " + start + "-" + end;
     }
 }

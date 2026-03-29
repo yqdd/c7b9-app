@@ -5,24 +5,42 @@ import android.graphics.Canvas;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import com.ow0b.c7b9.app.R;
+import com.ow0b.c7b9.app.util.ApiCallback;
+import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.ParaType;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import okhttp3.Call;
 
 public class BarChartView extends View implements PlayProgressBackground
 {
+    private static final Gson gson = new GsonBuilder().serializeNulls().create();
     private Paint barPaint, linePaint, progressPaint;
     private Paint textPaint;
     private List<Integer> data;
     private List<String> labels;
+    private boolean error;
     public BarChartView(Context context)
     {
         super(context);
@@ -53,10 +71,53 @@ public class BarChartView extends View implements PlayProgressBackground
         textPaint.setTextSize(30);
         textPaint.setTextAlign(Paint.Align.CENTER);
     }
-    public BarChartView(Context context, List<Integer> data)
+    public BarChartView(Context context, String idStr)
     {
         this(context);
-        setData(data);
+        try
+        {
+            invalidate();
+            int id = Integer.parseInt(idStr);
+            ApiClient.getInstance(context).url(getResources().getString(R.string.server) + "/audio/practice")
+                    .cache()
+                    .get()
+                    .parameter("id", String.valueOf(id))
+                    .callback(new ApiCallback(context)
+                    {
+                        @Override
+                        public void onResponse(@NonNull String response)
+                        {
+                            try
+                            {
+                                JsonElement json = JsonParser.parseString(response).getAsJsonObject().get("data");
+                                List<Float> data = gson.fromJson(json, TypeToken.getParameterized(List.class, Float.class).getType());
+                                BarChartView.this.data = data.stream().map(f -> (int) (f * 100)).collect(Collectors.toList());
+                                invalidate();
+                            }
+                            catch (Exception e)
+                            {
+                                error = true;
+                                invalidate();
+                                Log.e("BarChartView", "", e);
+                            }
+                        }
+                        @Override
+                        public void onFailure(@NonNull Call call, @NonNull IOException e)
+                        {
+                            super.onFailure(call, e);
+                            error = true;
+                            invalidate();
+                            Log.e("BarChartView", "", e);
+                        }
+                    })
+                    .enqueue();
+        }
+        catch (NumberFormatException e)
+        {
+            error = true;
+            invalidate();
+            Log.e("BarChartView", e.getMessage());
+        }
     }
 
     public static ViewGroup getView(Context context, BarChartView instance)
@@ -93,16 +154,23 @@ public class BarChartView extends View implements PlayProgressBackground
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-        if (data == null) return;
-
         int pLeft = getPaddingLeft(), pRight = getPaddingRight(),
                 pTop = getPaddingTop(), pBottom = getPaddingBottom();
         int width = getWidth() - pLeft - pRight;
         int height = getHeight() - pTop - pBottom;
-        int barWidth = Math.min(width / data.size(), 100);
+        if(error)
+        {
+            canvas.drawText("出现未知错误", width / 2f, height / 2f + pTop, textPaint);
+            return;
+        }
+        if (data == null)
+        {
+            canvas.drawText("数据加载中", width / 2f, height / 2f + pTop, textPaint);
+            return;
+        }
 
+        int barWidth = data.isEmpty() ? 100 : Math.min(width / data.size(), 100);
         canvas.drawRect(0, 0, getWidth() * process, getHeight(), progressPaint);
-
         int maxValue = 0;
         for (int value : data)
         {
@@ -114,7 +182,7 @@ public class BarChartView extends View implements PlayProgressBackground
             int barHeight = (int) ((data.get(i) / (float) maxValue) * (height - 100));
             int left = i * barWidth + pLeft;
             int top = height - barHeight + pTop;
-            int right = left + barWidth - 20;
+            int right = left + (int) (barWidth * 0.7f);
             int bottom = height + pTop;
 
             canvas.drawRect(left, top, right, bottom, barPaint);

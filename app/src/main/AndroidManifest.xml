@@ -19,6 +19,7 @@
             tools:targetApi="31">
         <activity
                 android:name=".activity.main.MainActivity"
+                android:windowSoftInputMode="adjustResize"
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,8 +28,13 @@
         </activity>
         <activity android:name=".ToolSelectionActivity" android:launchMode="singleTask"/>
         <activity android:name=".activity.piano.PianoToolActivity" android:launchMode="singleTask" android:screenOrientation="landscape"/>
-        <activity android:name=".activity.metronome.MetronomeActivity" android:launchMode="singleTask" android:screenOrientation="landscape"/>
-        <activity android:name=".LeaderboardActivity" android:launchMode="singleTask"/>
+        <activity android:name=".activity.metronome.MetronomeActivity" android:launchMode="singleTask"/>
+        <activity android:name=".activity.chord.ChordComposeActivity" android:launchMode="singleTask"/>
+        <activity android:name=".activity.chord.ChordSettingActivity" android:launchMode="singleTask"/>
+        <activity android:name=".activity.rhythm.RhythmActivity" android:launchMode="singleTask"/>
+        <activity android:name=".activity.rhythm.RhythmSettingActivity" android:launchMode="singleTask"/>
+        <activity android:name=".activity.practise.PractiseActivity" android:launchMode="singleTask"/>
+        <activity android:name=".activity.leaderboard.LeaderboardActivity" android:launchMode="singleTask"/>
         <activity android:name=".LoginActivity" android:launchMode="singleTask"/>
         <activity android:name=".RegistryActivity" android:launchMode="singleTask"/>
         <activity android:name=".AccountOptionsActivity" android:launchMode="singleTask"/>

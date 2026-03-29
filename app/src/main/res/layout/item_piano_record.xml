@@ -5,7 +5,7 @@
         android:id="@+id/piano_record_layout"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="horizontal"
-        android:padding="4dp"
+        android:padding="2dp"
         android:gravity="center_vertical">
 
     <ImageButton

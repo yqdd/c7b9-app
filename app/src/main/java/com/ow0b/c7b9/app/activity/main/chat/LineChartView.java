@@ -4,23 +4,40 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import com.ow0b.c7b9.app.R;
+import com.ow0b.c7b9.app.util.ApiCallback;
+import com.ow0b.c7b9.app.util.ApiClient;
 import com.ow0b.c7b9.app.util.ParaType;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import okhttp3.Call;
 
 public class LineChartView extends View implements PlayProgressBackground
 {
+    private static final Gson gson = new GsonBuilder().serializeNulls().create();
     private Paint linePaint, pointPaint, progressPaint;
     private Paint textPaint;
     private List<Float> data1;
     private List<Float> data2;
     private String[] labels;
     private int phase, tail;
+    private boolean error;
 
     public LineChartView(Context context)
     {
@@ -52,10 +69,57 @@ public class LineChartView extends View implements PlayProgressBackground
         textPaint.setTextSize(30);
         textPaint.setTextAlign(Paint.Align.CENTER);
     }
-    public LineChartView(Context context, List<Float> data1, List<Float> data2, int phase, int tail)
+    public enum Type { FORCES, RHYTHMS }
+    private Type type;
+    public LineChartView(Context context, String idStr, Type type)
     {
         this(context);
-        setData(data1, data2, phase, tail);
+        this.type = type;
+        try
+        {
+            invalidate();
+            int id = Integer.parseInt(idStr);
+            ApiClient.getInstance(context).url(getResources().getString(R.string.server) + "/audio/" + type.name().toLowerCase())
+                    .cache()
+                    .get()
+                    .parameter("id", String.valueOf(id))
+                    .callback(new ApiCallback(context)
+                    {
+                        @Override
+                        public void onResponse(@NonNull String response)
+                        {
+                            try
+                            {
+                                JsonObject obj = JsonParser.parseString(response).getAsJsonObject();
+                                JsonElement json1 = obj.get("data"), json2 = obj.get("ref");
+                                data1 = gson.fromJson(json1, TypeToken.getParameterized(List.class, Float.class).getType());
+                                data2 = json2 != null && !json2.isJsonNull() ? gson.fromJson(json2, TypeToken.getParameterized(List.class, Float.class).getType()) : List.of();
+                                invalidate();
+                            }
+                            catch (Exception e)
+                            {
+                                error = true;
+                                invalidate();
+                                Log.e("BarChartView", "", e);
+                            }
+                        }
+                        @Override
+                        public void onFailure(@NonNull Call call, @NonNull IOException e)
+                        {
+                            super.onFailure(call, e);
+                            error = true;
+                            invalidate();
+                            Log.e("LineChartView", e.getMessage());
+                        }
+                    })
+                    .enqueue();
+        }
+        catch (NumberFormatException e)
+        {
+            error = true;
+            invalidate();
+            Log.e("BarChartView", "", e);
+        }
     }
 
     public void setData(List<Float> data1, List<Float> data2, int phase, int tail)
@@ -79,16 +143,23 @@ public class LineChartView extends View implements PlayProgressBackground
     protected void onDraw(Canvas canvas)
     {
         super.onDraw(canvas);
-        if (data1 == null || data2 == null) return;
-
         int fontOffset = ParaType.toDP(this, 10);
         int pLeft = getPaddingLeft(), pRight = getPaddingRight(),
                 pTop = getPaddingTop(), pBottom = getPaddingBottom();
         int width = getWidth() - pLeft - pRight;
         int height = getHeight() - pTop - pBottom;
+        if (data1 == null || data2 == null)
+        {
+            canvas.drawText("数据加载中", width / 2f, height / 2f + pTop, textPaint);
+            return;
+        }
+        if(error)
+        {
+            canvas.drawText("出现未知错误", width / 2f, height / 2f + pTop, textPaint);
+            return;
+        }
 
         canvas.drawRect(0, 0, getWidth() * process, getHeight(), progressPaint);
-
         float maxValue1 = data1.stream().max(Float::compareTo).orElse(0f),
                 maxValue2 = data2.stream().max(Float::compareTo).orElse(0f);
         float max = Math.max(maxValue1, maxValue2);
@@ -114,7 +185,7 @@ public class LineChartView extends View implements PlayProgressBackground
             if (i == 0) path2.moveTo(x, y);
             else path2.lineTo(x, y);
             //绘制备注内容
-            if(labels[i] != null) canvas.drawText(labels[i], x, height, textPaint);
+            if(labels != null && labels[i] != null) canvas.drawText(labels[i], x, height, textPaint);
         }
 
         linePaint.setColor(getResources().getColor(R.color.gray));

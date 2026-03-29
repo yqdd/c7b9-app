@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,13 +16,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.ow0b.c7b9.app.R;
-import com.ow0b.c7b9.app.activity.main.MainActivity;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.URLEncoder;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,14 +46,20 @@ public class ApiClient
     private final static String TAG = ApiClient.class.getName();
     private final static Gson gson = new GsonBuilder().create();
     public static boolean serverAlive = true;
+    private Context context;
     private final OkHttpClient client;
     private final SharedPreferences sharedPreferences;
     public static SharedPreferences getSharedPreferences(Context context)
     {
         return context.getSharedPreferences("PermitPrefs", Context.MODE_PRIVATE);
     }
+    public static boolean isLogin(Context context)
+    {
+        return getSharedPreferences(context).contains("permit");
+    }
     private ApiClient(Context context, int timeout)
     {
+        this.context = context;
         sharedPreferences = getSharedPreferences(context);
 
         // 初始化OkHttpClient 设置CookieJar
@@ -90,13 +97,14 @@ public class ApiClient
     public static void pingServer(Activity activity)
     {
         //检测服务器是否被关闭
-        ApiClient.getInstance(activity, 2).url(activity.getResources().getString(R.string.server) + "/alive")
+        ApiClient.getInstance(activity, 5).url(activity.getResources().getString(R.string.server) + "/alive")
                 .get()
                 .callback(new Callback()
                 {
                     @Override
                     public void onFailure(@NonNull Call call, @NonNull IOException e)
                     {
+                        Log.e(TAG, "onFailure: ", e);
                         activity.runOnUiThread(() ->
                         {
                             View view = View.inflate(activity, R.layout.layout_server_dead, null);
@@ -122,6 +130,7 @@ public class ApiClient
     private String method;
     private String type;
     private Object body;
+    private boolean cache;
     private Callback callback = null;
     public ApiClient url(String url)
     {
@@ -131,6 +140,11 @@ public class ApiClient
     public ApiClient parameter(String key, String value)
     {
         parameters.put(key, value);
+        return this;
+    }
+    public ApiClient cache()
+    {
+        this.cache = true;
         return this;
     }
     public ApiClient get()
@@ -167,10 +181,11 @@ public class ApiClient
     public ApiClient callback(Callback callback)
     {
         this.callback = callback;
+        if(cache && !(callback instanceof ApiCallback)) throw new RuntimeException("需要缓存需要使用ApiCallback多次获取response");
         return this;
     }
 
-    private Request requestInit()
+    private String requestUrl()
     {
         StringBuilder url = new StringBuilder(this.url);
         if(!parameters.isEmpty())
@@ -179,7 +194,10 @@ public class ApiClient
             parameters.forEach((k, v) -> url.append(k).append("=").append(v).append("&"));
             url.deleteCharAt(url.length() - 1);
         }
-
+        return url.toString();
+    }
+    private Request requestInit()
+    {
         Request.Builder reqBuilder = new Request.Builder();
         if(sharedPreferences.contains("permit"))
             reqBuilder.addHeader("permit", sharedPreferences.getString("permit", ""));
@@ -190,34 +208,83 @@ public class ApiClient
         else if(type == null) reqBuilder.method(method, RequestBody.create(body.toString().getBytes()));
         else reqBuilder.method(method, RequestBody.create(body.toString(), MediaType.get(type)));
 
-        reqBuilder.url(url.toString());
+        reqBuilder.url(requestUrl());
         return reqBuilder.build();
     }
     public void enqueue()
     {
+        File cacheFile = cacheFile(context, requestUrl());
+        if(cache && cacheFile.exists() && callback instanceof ApiCallback apiCallback)
+        {
+            new Thread(() ->
+            {
+                try(FileInputStream stream = new FileInputStream(cacheFile))
+                {
+                    StringBuilder resp = new StringBuilder();
+                    int i;
+                    while((i = stream.read()) != -1) resp.append((char) i);
+                    apiCallback.onResponse(resp.toString());
+                }
+                catch (Exception e)
+                {
+                    enqueueWeb();
+                }
+            }).start();
+        }
+        else enqueueWeb();
+    }
+    private void enqueueWeb()
+    {
+        File cacheFile = cacheFile(context, requestUrl());
         client.newCall(requestInit()).enqueue(new Callback()
         {
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException
             {
-                if(callback instanceof ApiCallback apiCallback)
+                try
                 {
-                    String body = response.body().string();
-                    Log.i(TAG, "request: " + call.request());
-                    Log.i(TAG, "response: " + body);
-                    //这里如果报IllegalStateException，response是空的，是后端json格式没写对（每条请求必须带random和permit）
-                    JsonObject respJson = JsonParser.parseString(body).getAsJsonObject();
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    if(respJson.get("random") != null)
-                        editor.putString("random", respJson.get("random").getAsString());
-                    if(respJson.get("permit") != null)
-                        editor.putString("permit", respJson.get("permit").getAsString());
-                    editor.apply();
-                    apiCallback.onResponse(body);
-                    apiCallback.onResponse(response, body);
+                    if(response.code() != 200)
+                    {
+                        //只有200返回码才能触发响应，否则服务端报错也会触发app会有一堆问题
+                        callback.onFailure(call, new IOException());
+                        Log.e(TAG, "onResponse: 非200响应码：" + response.code());
+                    }
+                    else if(callback instanceof ApiCallback apiCallback)
+                    {
+                        String body = response.body().string();
+                        Log.i(TAG, "request: " + call.request());
+                        Log.i(TAG, "response: " + body);
+                        if(cache)       //如果开启了缓存则缓存数据
+                        {
+                            cacheFile.createNewFile();
+                            try(Writer writer = new OutputStreamWriter(new FileOutputStream(cacheFile)))
+                            {
+                                writer.write(body);
+                            }
+                            catch (IOException e)
+                            {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                        //这里如果报IllegalStateException，response是空的，是后端json格式没写对（每条请求必须带random和permit）
+                        JsonObject respJson = JsonParser.parseString(body).getAsJsonObject();
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        if(respJson.get("random") != null)
+                            editor.putString("random", respJson.get("random").getAsString());
+                        if(respJson.get("permit") != null)
+                            editor.putString("permit", respJson.get("permit").getAsString());
+                        editor.apply();
+                        apiCallback.onResponse(body);
+                        apiCallback.onResponse(response, body);
+                    }
+                    else callback.onResponse(call, response);
+                    serverAlive = true;
                 }
-                else callback.onResponse(call, response);
-                serverAlive = true;
+                catch (Exception e)
+                {
+                    Toast.showInfo(context, "调用api出现错误：" + e.getMessage());
+                    Log.e(TAG, "调用api出现错误：", e);
+                }
             }
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e)
@@ -226,6 +293,7 @@ public class ApiClient
             }
         });
     }
+
     public void execute()
     {
         try(Response response = client.newCall(requestInit()).execute())
@@ -236,6 +304,12 @@ public class ApiClient
         {
             callback.onFailure(null, e);
         }
+    }
+    private static File cacheFile(Context context, String name)
+    {
+        Path path = context.getCacheDir().toPath().resolve("api");
+        if(!path.toFile().exists() && !path.toFile().mkdir()) Log.e("ApiClient", "cacheFile: 创建缓存文件夹失败");
+        return path.resolve(URLEncoder.encode(name)).toFile();
     }
 
     public static String check(Context context, String response)
@@ -258,49 +332,5 @@ public class ApiClient
             //if(error != null && !error.isJsonNull()) Toast.showError(context, error.getAsString());
         }
         return null;
-    }
-    public static void downloadResource(Context context, ProgressBar progressBar, int rid, File saveFile, Runnable callback)
-    {
-        downloadResourceClient(context, progressBar, saveFile, callback)
-                .parameter("id", String.valueOf(rid))
-                .enqueue();
-    }
-    public static void downloadResource(Context context, ProgressBar progressBar, String secret, File saveFile, Runnable callback)
-    {
-        downloadResourceClient(context, progressBar, saveFile, callback)
-                .parameter("secret", secret)
-                .enqueue();
-    }
-    private static ApiClient downloadResourceClient(Context context, ProgressBar progressBar, File saveFile, Runnable callback)
-    {
-        return ApiClient.getInstance(context).url(context.getResources().getString(R.string.server) + "/resource")
-                .get()
-                .callback(new Callback()
-                {
-                    @Override
-                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException
-                    {
-                        InputStream body = response.body().byteStream();
-                        long length = response.body().contentLength();
-                        long current = 0;
-                        progressBar.setMax(10000);
-                        try(OutputStream output = new FileOutputStream(saveFile))
-                        {
-                            int b;
-                            while((b = body.read()) != -1)
-                            {
-                                output.write(b);
-                                current ++;
-                            }
-                            progressBar.setProgress((int) ((current / length) * 10000));
-                        }
-                        callback.run();
-                    }
-                    @Override
-                    public void onFailure(@NonNull Call call, @NonNull IOException e)
-                    {
-                        Toast.showError(context, "下载音频文件出现未知错误");
-                    }
-                });
     }
 }

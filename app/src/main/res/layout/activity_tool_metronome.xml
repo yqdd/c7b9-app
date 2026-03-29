@@ -5,63 +5,53 @@
         android:layout_height="match_parent"
         android:padding="16dp"
         android:orientation="vertical" >
-    <ImageButton
-            android:background="@drawable/img_back"
-            android:backgroundTint="@color/black"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginBottom="10dp"
-            android:layout_gravity="center_vertical" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/metronome_container"
+    <LinearLayout
+            android:id="@+id/metronome_buttons"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-        <LinearLayout
-                android:id="@+id/metronome_views"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:layout_marginEnd="10dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/metronome_buttons"/>
+            android:layout_height="40dp"
+            android:layout_marginBottom="10dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+        <ImageButton
+                android:id="@+id/back"
+                android:background="@drawable/img_back"
+                android:backgroundTint="@color/black"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginRight="10dp"
+                android:layout_gravity="center_vertical" />
 
-        <LinearLayout
-                android:id="@+id/metronome_buttons"
+        <TextView
+                android:id="@+id/metronome_add"
                 android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                app:layout_constraintStart_toEndOf="@id/metronome_views"
-                app:layout_constraintEnd_toEndOf="parent">
-            <TextView
-                    android:id="@+id/metronome_add"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="0.5"
-                    android:background="@drawable/bg_chat"
-                    android:backgroundTint="@color/light_gray"
-                    android:backgroundTintMode="src_over"
-                    android:layout_marginBottom="5dp"
-                    android:gravity="center"
-                    android:text="+"
-                    android:textSize="30sp" />
-            <TextView
-                    android:id="@+id/metronome_del"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="0.5"
-                    android:background="@drawable/bg_chat"
-                    android:backgroundTint="@color/light_gray"
-                    android:backgroundTintMode="src_over"
-                    android:layout_marginTop="5dp"
-                    android:gravity="center"
-                    android:text="-"
-                    android:textSize="30sp" />
+                android:layout_height="40dp"
+                android:background="@drawable/bg_chat"
+                android:backgroundTint="@color/light_gray"
+                android:backgroundTintMode="src_over"
+                android:layout_marginRight="5dp"
+                android:gravity="center"
+                android:text="+"
+                android:textSize="30sp" />
+        <TextView
+                android:id="@+id/metronome_del"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_chat"
+                android:backgroundTint="@color/light_gray"
+                android:backgroundTintMode="src_over"
+                android:gravity="center"
+                android:text="-"
+                android:textSize="30sp" />
 
-        </LinearLayout>
+    </LinearLayout>
 
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <LinearLayout
+            android:id="@+id/metronome_views"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"/>
 
 
 </LinearLayout>

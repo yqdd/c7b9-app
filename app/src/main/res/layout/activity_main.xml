@@ -59,6 +59,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/chat_poster"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1">
@@ -76,6 +77,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
+                            android:layout_marginBottom="10dp"
                             android:orientation="horizontal">
                         <ImageView
                                 android:src="@drawable/img_logo_black"
@@ -93,22 +95,23 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"/>
                     </LinearLayout>
+                    <!--
                     <TextView
                             android:paddingTop="5dp"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
-                            android:text="有什么问题尽管问我吧!"
+                            android:text="有什么问题尽管找我解决吧!"
                             android:textSize="18sp"
-                            android:textColor="@color/dark_gray"/>
+                            android:textColor="@color/dark_gray"/>-->
                     <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:gravity="center"
-                            android:text="中央高校基本科研业务费专项资金资助(2025112 项目编号)"
-                            android:textSize="10sp"
-                            android:textColor="@color/light_gray"/>
+                            android:text="中央高校基本科研业务费专项资金资助 (2025112 项目编号)"
+                            android:textSize="12sp"
+                            android:textColor="@color/gray"/>
                 </LinearLayout>
 
                 <ScrollView
@@ -153,6 +156,43 @@
                         android:orientation="horizontal" />
             </HorizontalScrollView>
 
+            <HorizontalScrollView
+                    android:id="@+id/tool_scroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:scrollbars="none"
+                    app:layout_constraintTop_toBottomOf="@id/conversations_list"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent">
+                <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent">
+                    <TextView
+                            style="@style/fragment_drawer_tool_scroll_button"
+                            android:id="@+id/fragment_drawer_tool_metronome"
+                            android:text="节拍器"/>
+                    <TextView
+                            style="@style/fragment_drawer_tool_scroll_button"
+                            android:id="@+id/fragment_drawer_tool_chord"
+                            android:text="和弦听辨"/>
+                    <TextView
+                            style="@style/fragment_drawer_tool_scroll_button"
+                            android:id="@+id/fragment_drawer_tool_rhythm"
+                            android:text="节奏听辨"/>
+                    <TextView
+                            style="@style/fragment_drawer_tool_scroll_button"
+                            android:id="@+id/fragment_drawer_tool_practise"
+                            android:text="历史数据"/>
+                    <TextView
+                            style="@style/fragment_drawer_tool_scroll_button"
+                            android:id="@+id/fragment_drawer_tool_leaderboard"
+                            android:text="token排行"/>
+
+                </LinearLayout>
+
+            </HorizontalScrollView>
+
             <EditText
                     android:id="@+id/user_input"
                     android:layout_width="match_parent"
@@ -185,7 +225,7 @@
                             app:strokeColor="@color/black"
                             app:strokeWidth="1.5dp"
                             android:layout_marginEnd="5dp"
-                            android:text="音频理解 (QWEN)" />
+                            android:text="音频理解" />
 
                     <com.google.android.material.button.MaterialButton
                             android:id="@+id/midi_analyze_button"
@@ -195,7 +235,7 @@
                             android:paddingEnd="0dp"
                             app:strokeColor="@color/black"
                             app:strokeWidth="1.5dp"
-                            android:text="MIDI分析"/>
+                            android:text="更多乐器"/>
 
                 </LinearLayout>
 

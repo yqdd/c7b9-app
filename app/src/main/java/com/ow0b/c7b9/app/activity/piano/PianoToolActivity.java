@@ -16,12 +16,14 @@ import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.gson.Gson;
 import com.ow0b.c7b9.app.R;
 import com.ow0b.c7b9.app.activity.metronome.MetronomeActivity;
+import com.ow0b.c7b9.app.databinding.ActivityToolPianoBinding;
 import com.ow0b.c7b9.app.util.ParaType;
 import com.ow0b.c7b9.app.util.Toast;
 import com.ow0b.c7b9.app.util.midi.Midi;
@@ -40,8 +42,9 @@ import java.util.Date;
 public class PianoToolActivity extends AppCompatActivity
 {
     private final static String TAG = "PianoKeys";
+    private ActivityToolPianoBinding binding;
     private ImageButton reverbButton;
-    private LinearLayout listButton, saveButton, metronomeButton;
+    private LinearLayout listButton;
     private HorizontalScrollView scroll;
     private ListView recordList;
     private LinearLayout whitesContainer, blacksContainer;
@@ -84,12 +87,11 @@ public class PianoToolActivity extends AppCompatActivity
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);       // 隐藏标题栏
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tool_piano);
+        binding = ActivityToolPianoBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         scroll = findViewById(R.id.piano_container_scroll);
         listButton = findViewById(R.id.piano_record_list_button);
-        saveButton = findViewById(R.id.piano_record_save_button);
-        metronomeButton = findViewById(R.id.piano_record_metronome_button);
         reverbButton = findViewById(R.id.piano_record_reverb_button);
         whitesContainer = findViewById(R.id.piano_whites_container);
         blacksContainer = findViewById(R.id.piano_blacks_container);
@@ -100,13 +102,16 @@ public class PianoToolActivity extends AppCompatActivity
 
         loadRecords();
         loadKeys();
+        View saveButton = View.inflate(this, R.layout.item_piano_save_button, null);
+        binding.pianoRecordList.addFooterView(saveButton);
+
+        binding.back.setOnClickListener(v -> finish());
         listButton.setOnClickListener(v ->
         {
             if(recordList.getVisibility() != View.GONE) recordList.setVisibility(View.GONE);
             else recordList.setVisibility(View.VISIBLE);
         });
         saveButton.setOnClickListener(v -> saveRecord());
-        metronomeButton.setOnClickListener(v -> startActivity(new Intent(PianoToolActivity.this, MetronomeActivity.class)));
         reverbButton.setOnClickListener(v ->
         {
             MidiPlayer.reverb = !MidiPlayer.reverb;
@@ -167,12 +172,12 @@ public class PianoToolActivity extends AppCompatActivity
             {
                 case MotionEvent.ACTION_DOWN ->
                 {
-                    MidiPlayer.playKey(i);
-                    pianoNotes[i] = new Note(getNoteName(i), i, (SystemClock.uptimeMillis() - startTime) / 1000f, 127);
+                    MidiPlayer.playKey(i + 21);
+                    pianoNotes[i] = new Note(getNoteName(i), i + 21, (SystemClock.uptimeMillis() - startTime) / 1000f, 127);
                 }
                 case MotionEvent.ACTION_UP ->
                 {
-                    if(!MidiPlayer.reverb) MidiPlayer.stopKey(i);
+                    if(!MidiPlayer.reverb) MidiPlayer.stopKey(i + 21);
                     if(pianoNotes[i] != null)
                     {
                         pianoNotes[i].end = Math.max((SystemClock.uptimeMillis() - startTime) / 1000f, pianoNotes[i].start + 0.1f);

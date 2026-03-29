@@ -192,13 +192,13 @@ public class AnalyzeView extends LinearLayout
     }
     public void setStandMidi(Midi midi)
     {
-        standMidi.setMidi(midi);
+        //standMidi.setMidi(midi);
         if(standMidiView.getChildAt(0) instanceof TextView textView) textView.setText(midi.name);
         standMidiView.setVisibility(VISIBLE);
     }
     public void setUserMidi(Midi midi)
     {
-        userMidi.setMidi(midi);
+        //userMidi.setMidi(midi);
         userMidiView.setVisibility(VISIBLE);
     }
 }

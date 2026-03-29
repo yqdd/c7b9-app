@@ -6,8 +6,10 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.ow0b.c7b9.app.activity.leaderboard.LeaderboardActivity;
 import com.ow0b.c7b9.app.activity.piano.PianoToolActivity;
 
+@Deprecated
 public class ToolSelectionActivity extends AppCompatActivity
 {
     private TextView pianoToolButton, leaderboardToolButton;

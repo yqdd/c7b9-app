@@ -4,7 +4,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"
-        android:splitMotionEvents="true">
+        android:splitMotionEvents="true"
+        android:fitsSystemWindows="false">
     <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -14,6 +15,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="30dp">
             <ImageButton
+                    android:id="@+id/back"
                     android:background="@drawable/img_back"
                     android:backgroundTint="@color/black"
                     android:layout_width="20dp"
@@ -24,9 +26,10 @@
 
         <ListView
                 android:id="@+id/piano_record_list"
+                android:divider="@color/empty"
                 android:layout_width="250dp"
-                android:layout_height="wrap_content"
-                android:visibility="gone"/>
+                android:layout_height="wrap_content"/>
+
     </LinearLayout>
 
 
@@ -44,10 +47,10 @@
                     app:layout_constraintTop_toTopOf="parent">
                 <LinearLayout
                         android:background="@drawable/bg_chat"
-                        android:backgroundTint="@color/red"
                         android:id="@+id/piano_record_list_button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginRight="5dp"
                         android:gravity="center_vertical">
                     <ImageButton
                             android:src="@drawable/btn_piano_list"
@@ -60,47 +63,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="列表"
-                            android:textSize="18sp" />
+                            android:padding="5dp"
+                            android:textSize="16sp" />
                 </LinearLayout>
-
-                <LinearLayout
-                        android:background="@drawable/bg_chat"
-                        android:id="@+id/piano_record_save_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical">
-                    <ImageButton
-                            android:src="@drawable/btn_piano_save"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:backgroundTint="@color/empty"
-                            app:tint="@color/black" />
-                    <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="保存"
-                            android:textSize="18sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                        android:background="@drawable/bg_chat"
-                        android:id="@+id/piano_record_metronome_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical">
-                    <ImageButton
-                            android:src="@drawable/btn_piano_save"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:backgroundTint="@color/empty"
-                            app:tint="@color/black" />
-                    <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="节拍器"
-                            android:textSize="18sp" />
-                </LinearLayout>
-
 
             </LinearLayout>
 

@@ -105,7 +105,7 @@ public class PianoRecordAdapter extends BaseAdapter
     private void playRecords(int position)
     {
         String name = records.get(position).name;
-        MidiPlayer.play(activity, getMidi(name));
+        MidiPlayer.playInExecutor(activity, getMidi(name));
     }
     private Midi getMidi(String name)
     {

@@ -12,19 +12,21 @@
             android:paddingVertical="10dp"
             android:text="无法连接到服务器"
             android:textSize="18dp"/>
-    <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/btn_record_play"
-            android:layout_gravity="center"
-            android:layout_marginBottom="10dp"/>
 
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="120dp"
+        android:layout_gravity="center"
+        android:src="@drawable/img_server_dead" />
+
+    <!--
     <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="建议加qq：2425722082\n或者加qq群：xxxxxxxx 了解情况"
-            android:textSize="14dp"/>
+            android:text="建议加qq：xxxxxxx\n或者加qq群：xxxxxxxx 了解情况"
+            android:textSize="14dp"/>-->
+
 
     <TextView
             android:id="@+id/server_dead_ok"

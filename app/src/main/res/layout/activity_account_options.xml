@@ -21,6 +21,7 @@
                 android:padding="10dp"/>
 
         <ImageButton
+                android:id="@+id/back"
                 android:background="@drawable/img_back"
                 android:backgroundTint="@color/black"
                 android:layout_width="20dp"

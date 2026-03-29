@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+    <RadioGroup
+            android:id="@+id/radioGroupRhythm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+        <RadioButton
+                android:id="@+id/radioPattern0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rhythm Pattern 0"/>
+
+        <RadioButton
+                android:id="@+id/radioPattern1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rhythm Pattern 1"/>
+
+        <RadioButton
+                android:id="@+id/radioPattern2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rhythm Pattern 2"/>
+    </RadioGroup>
+
+    <Button
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save Rhythm Pattern"
+            android:layout_marginTop="16dp"/>
+</LinearLayout>

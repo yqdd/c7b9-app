@@ -9,10 +9,22 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 import android.util.Log;
 
+import com.ow0b.c7b9.app.activity.main.AudioPlayer;
+import com.ow0b.c7b9.app.activity.main.AudioRecorder;
 import com.ow0b.c7b9.app.util.midi.Midi;
+import com.ow0b.c7b9.app.util.midi.MidiGenerator;
 import com.ow0b.c7b9.app.util.midi.Note;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -24,9 +36,9 @@ public class MidiPlayer
     private final static String TAG = "MidiPlayer";
     private static ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
     private static SoundPool soundPool;
-    private static final int[] pianoSounds = new int[88];
-    private static final Integer[] pianoStreams = new Integer[88];
-    private static final ValueAnimator[] pianoAnims = new ValueAnimator[88];
+    private static final int[] pianoSounds = new int[128];
+    private static final Integer[] pianoStreams = new Integer[128];
+    private static final ValueAnimator[] pianoAnims = new ValueAnimator[128];
     public static boolean reverb = false;
 
     public static void init(Activity activity)
@@ -36,7 +48,8 @@ public class MidiPlayer
         {
             for(int i = 1; i <= 88; i ++)
             {
-                pianoSounds[i - 1] = soundPool.load(activity.getResources().getAssets().openFd("grand/tone (" + i + ").wav"), 1);
+                //midi 60是c，这里39是c，要加上21补差值
+                pianoSounds[i - 1 + 21] = soundPool.load(activity.getResources().getAssets().openFd("grand/tone (" + i + ").wav"), 1);
             }
         }
         catch (IOException e)
@@ -45,6 +58,23 @@ public class MidiPlayer
         }
     }
     public static void play(Activity activity, Midi midi)
+    {
+        try
+        {
+            File midiFile = File.createTempFile("temp-", ".mid", AudioRecorder.audioCacheDir(activity).toFile());
+            try(FileOutputStream stream = new FileOutputStream(midiFile))
+            {
+                stream.write(MidiGenerator.generateMidiFile(midi.notes));
+            }
+            AudioPlayer.setComponent(null, null);
+            AudioPlayer.playAudio(activity, midiFile, 0, midiFile::delete);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+    public static void playInExecutor(Activity activity, Midi midi)
     {
         for(Note note : midi.notes)
         {
@@ -63,6 +93,7 @@ public class MidiPlayer
             }, (long) (note.start * 1000), TimeUnit.MILLISECONDS);
         }
     }
+
     public static void stop()
     {
         if(executor != null)
@@ -80,6 +111,7 @@ public class MidiPlayer
 
     public static void playKey(int i)
     {
+        if(i < 20 || i >= 108) return;
         if(pianoStreams[i] != null) soundPool.stop(pianoStreams[i]);
         if(pianoAnims[i] != null) pianoAnims[i].end();
 
@@ -87,10 +119,12 @@ public class MidiPlayer
     }
     public static void stopKey(int i)
     {
+        if(i < 20 || i >= 108) return;
         stopKey(i, 500);
     }
     public static void stopKey(int i, int millis)
     {
+        if(i < 20 || i >= 108) return;
         ValueAnimator anim = pianoAnims[i] = ValueAnimator.ofFloat(1, 0);
         anim.addUpdateListener(value ->
         {
@@ -118,7 +152,7 @@ public class MidiPlayer
     }
     public static void stopAllKeys()
     {
-        for(int i = 0; i < 88; i ++)
+        for(int i = 0; i < pianoStreams.length; i ++)
         {
             if(pianoStreams[i] != null)
                 stopKey(i, 100);
