@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
@@ -126,21 +127,20 @@ public class MidiPlayer
     {
         if(i < 20 || i >= 108) return;
         ValueAnimator anim = pianoAnims[i] = ValueAnimator.ofFloat(1, 0);
+        Integer stream = pianoStreams[i];
         anim.addUpdateListener(value ->
         {
-            if(pianoStreams[i] != null)
-            {
-                soundPool.setVolume(pianoStreams[i], (float) value.getAnimatedValue(), (float) value.getAnimatedValue());
-            }
+            if(!Objects.equals(pianoStreams[i], stream)) anim.cancel();
+            else if(stream != null) soundPool.setVolume(stream, (float) value.getAnimatedValue(), (float) value.getAnimatedValue());
         });
         anim.addListener(new AnimatorListenerAdapter()
         {
             @Override
             public void onAnimationEnd(Animator animation)
             {
-                if(pianoStreams[i] != null)
+                if(stream != null) soundPool.stop(stream);
+                if(Objects.equals(pianoStreams[i], stream))
                 {
-                    soundPool.stop(pianoStreams[i]);
                     pianoStreams[i] = null;
                     pianoAnims[i] = null;
                 }

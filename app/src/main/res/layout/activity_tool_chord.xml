@@ -1,57 +1,203 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp">
 
     <LinearLayout
-            android:orientation="vertical"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-
-        <!-- 播放和弦的按钮 -->
-        <Button
-                android:id="@+id/play_chord_button"
+            <ImageButton
+                android:id="@+id/back"
+                android:background="@drawable/img_back"
+                android:backgroundTint="@color/black"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center_vertical"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"/>
+            <Button
+                android:id="@+id/setting"
+                android:text="设置"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Play Chord" />
+                android:layout_gravity="center_vertical"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintRight_toRightOf="parent"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- 显示和弦的TextView -->
-        <TextView
-                android:id="@+id/chord_display"
+        <com.ow0b.c7b9.app.activity.chord.StaffView
+            android:id="@+id/chord_display"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <LinearLayout
+            android:id="@+id/answer_display"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+            <TextView
+                android:id="@+id/answer_text_display"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Your chord will appear here"
-                android:textSize="16sp" />
+                android:gravity="center"
+                android:text="回答正确"/>
+            <com.ow0b.c7b9.app.activity.chord.StaffView
+                android:id="@+id/answer_chord_display"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/answer_next_display"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="下一题"/>
+
+        </LinearLayout>
+
 
         <!-- 根音按钮容器：12个按钮在代码中动态创建 -->
-        <LinearLayout
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <LinearLayout
                 android:id="@+id/note_buttons_container"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:orientation="horizontal">
-            <!-- 根音按钮将在代码中添加 -->
-        </LinearLayout>
+            </LinearLayout>
+        </HorizontalScrollView>
 
-        <!-- 音程按钮容器：音程按钮在代码中动态创建 -->
         <LinearLayout
-                android:id="@+id/interval_buttons_container"
+            android:id="@+id/interval_buttons_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical">
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:orientation="horizontal">
-            <!-- 音程按钮将在代码中添加 -->
-        </LinearLayout>
+                <Button
+                    style="@style/chord_button"
+                    android:text="小二度" />
+                <Button
+                    style="@style/chord_button"
+                    android:text="大二度" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    style="@style/chord_button"
+                    android:text="小三度" />
+                <Button
+                    style="@style/chord_button"
+                    android:text="大三度" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    style="@style/chord_button"
+                    android:text="纯四度" />
+                <Button
+                    style="@style/chord_button"
+                    android:text="增四度" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    style="@style/chord_button"
+                    android:text="减五度" />
+                <Button
+                    style="@style/chord_button"
+                    android:text="纯五度" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    style="@style/chord_button"
+                    android:text="小六度" />
+                <Button
+                    style="@style/chord_button"
+                    android:text="大六度" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    style="@style/chord_button"
+                    android:text="小七度" />
+                <Button
+                    style="@style/chord_button"
+                    android:text="大七度" />
+            </LinearLayout>
 
+        </LinearLayout>
         <!-- 提交和弦的按钮 -->
-        <Button
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/submit_buttons_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center">
+            <Button
                 android:id="@+id/submit_chord_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Submit Chord"
-                android:layout_marginTop="16dp" />
+                android:paddingHorizontal="50dp"
+                android:text="提交"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"/>
+            <Button
+                android:id="@+id/clear_chord_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="清空"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintRight_toRightOf="parent"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>
-</ScrollView>
+
+    <Button
+        android:id="@+id/play_chord_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="50dp"
+        android:text="播放"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+    <Button
+        android:id="@+id/play_split_chord_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="分解"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+    <Button
+        android:id="@+id/play_listen_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="试听"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

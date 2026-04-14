@@ -247,7 +247,7 @@ public class ApiClient
                     {
                         //只有200返回码才能触发响应，否则服务端报错也会触发app会有一堆问题
                         callback.onFailure(call, new IOException());
-                        Log.e(TAG, "onResponse: 非200响应码：" + response.code());
+                        Log.e(TAG, "onResponse: 非200响应码：" + response.code() + " " + response.body());
                     }
                     else if(callback instanceof ApiCallback apiCallback)
                     {

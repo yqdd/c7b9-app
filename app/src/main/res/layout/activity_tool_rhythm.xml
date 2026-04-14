@@ -1,35 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:gravity="center_horizontal">
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-    <Button
-            android:id="@+id/btnShowAnswer"
+        android:layout_height="wrap_content">
+        <ImageButton
+            android:id="@+id/back"
+            android:background="@drawable/img_back"
+            android:backgroundTint="@color/black"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"/>
+        <Button
+            android:id="@+id/setting"
+            android:text="设置"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Show Answer"
+            android:layout_gravity="center_vertical"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <Button
+            android:id="@+id/btn_show_answer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="显示答案"
             android:layout_marginTop="8dp"/>
 
     <TextView
-            android:id="@+id/txtAnswer"
-            android:layout_width="wrap_content"
+            android:id="@+id/txt_answer"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="25dp"
             android:textSize="18sp"
             android:layout_marginTop="16dp"/>
 
-    <Button
-            android:id="@+id/btnPlay"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginBottom="10dp">
+        <Button
+            android:id="@+id/btn_next"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Play Rhythm" />
+            android:text="下一题"
+            android:layout_marginBottom="20dp"
+            app:layout_constraintBottom_toTopOf="@id/btn_play"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+        <Button
+            android:id="@+id/btn_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="播放"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
 
-    <Button
-            android:id="@+id/btnPause"
+        <Button
+            android:id="@+id/btn_pause"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pause"
-            android:layout_marginTop="8dp" />
+            android:text="暂停"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

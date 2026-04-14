@@ -42,7 +42,7 @@ public class ChatUtils
     private static final String TAG = "ChatUtils";
     public static ChatService chatService = Api.create(ChatService.class);
     public static Gson gson = new GsonBuilder().create();
-    public static void sendMessageToAI(MainActivity activity, ChatContextView chatContext, String message, Integer sid, List<Integer> audios)
+    public static void sendMessageToAI(MainActivity activity, ChatContextView chatContext, boolean thinking, boolean matchMidi, String message, Integer sid, List<Integer> audios)
     {
         Runnable generateFinish = () ->
         {
@@ -61,6 +61,8 @@ public class ChatUtils
         */
         ApiClient.getInstance(activity, 120).url(activity.getResources().getString(R.string.server) + "/chat")
                 .parameter("id", String.valueOf(sid))
+                .parameter("thinking", String.valueOf(thinking))
+                .parameter("matchMidi", String.valueOf(matchMidi))
                 .parameter("message", message)
                 .method("POST", audios)
                 .callback(new Callback()
@@ -72,7 +74,8 @@ public class ChatUtils
                         try
                         {
                             activity.generateCall = call;
-                            sendMessageResponse(activity, chatContext, response.body().charStream());
+                            //sendMessageResponse(activity, chatContext, response.body().charStream());
+                            sendMessageResponse(activity, chatContext, response.body().source());
                             generateFinish.run();
                         }
                         catch (IOException e)
@@ -118,12 +121,15 @@ public class ChatUtils
                         {
                             switch (json.get("type").getAsString())
                             {
-                                case "id" ->
+                                case "context" ->
                                 {
-                                    activity.chatContextId = json.get("id").getAsInt();
-                                    //新对话需要等待 chatContextId 赋值后才能取消
-                                    activity.sendButton.setImageResource(R.drawable.btn_send_cancel);
-                                    activity.isGenerating = true;
+                                    if(json.get("id") != null && !json.get("id").isJsonNull())
+                                    {
+                                        activity.chatContextId = json.get("id").getAsInt();
+                                        //新对话需要等待 chatContextId 赋值后才能取消
+                                        activity.sendButton.setImageResource(R.drawable.btn_send_cancel);
+                                        activity.isGenerating = true;
+                                    }
                                 }
                                 case "message" ->
                                 {
@@ -174,7 +180,7 @@ public class ChatUtils
                  */
             }
         }
-    }
+    }/*
     @Deprecated
     private static void sendMessageResponse(MainActivity activity, ChatContextView chatContext, Reader reader) throws IOException
     {
@@ -185,17 +191,15 @@ public class ChatUtils
             reasoningView[0] = chatContext.newAiText("深度思考");
             contentView[0] = chatContext.newAiText();
         });
-        /*
-        activity.runOnUiThread(() ->
-        {
-            activity.chatDisplay.addView(new ExpandableLayout(activity)
-            {{
-                setHeaderText("深度思考");
-                addComponent(reasoningView);
-            }});
-            activity.chatDisplay.addView(contentView);
-        });
-         */
+        //activity.runOnUiThread(() ->
+        //{
+        //    activity.chatDisplay.addView(new ExpandableLayout(activity)
+        //    {{
+        //        setHeaderText("深度思考");
+        //        addComponent(reasoningView);
+        //    }});
+        //    activity.chatDisplay.addView(contentView);
+        //});
         BufferedReader bufferedReader = new BufferedReader(reader);
         String line;
         while((line = bufferedReader.readLine()) != null)
@@ -253,6 +257,7 @@ public class ChatUtils
             }
         }
     }
+    */
 
 
     private static void loadContextFromWeb(MainActivity activity, ChatContextView promptView, int id)

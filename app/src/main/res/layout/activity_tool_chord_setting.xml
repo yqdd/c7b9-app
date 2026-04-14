@@ -1,57 +1,158 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/high_light_gray">
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="和弦听辨设置"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:padding="10dp"/>
+
+        <ImageButton
+            android:id="@+id/back"
+            android:background="@drawable/img_back"
+            android:backgroundTint="@color/black"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical" />
+
+    </FrameLayout>
 
     <LinearLayout
+        android:background="@drawable/bg_option"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="15dp"
+        android:padding="10dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="设置构建和弦的音程"/>
+        <LinearLayout
+            android:id="@+id/interval_checkboxes"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-
-        <CheckBox
-                android:id="@+id/checkbox_daxiaosan"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="大小三度" />
-
-        <CheckBox
-                android:id="@+id/checkbox_jianzengsan"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="减增三度" />
-
-        <CheckBox
-                android:id="@+id/checkbox_beizengjiansan"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="倍增减三度" />
-
-        <CheckBox
-                android:id="@+id/checkbox_daxiaoerdu"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="大小二度" />
-
-        <CheckBox
-                android:id="@+id/checkbox_chunsidu"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="纯四度" />
-
-        <EditText
-                android:id="@+id/et_num_notes"
+            <LinearLayout
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="输入叠加音个数"
-                android:inputType="number" />
-
-        <Button
-                android:id="@+id/save_settings_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="保存设置"
-                android:layout_marginTop="16dp" />
-
+                android:layout_height="wrap_content">
+                <CheckBox
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="30dp"
+                    android:text="小二度" />
+                <CheckBox
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="30dp"
+                    android:text="大二度" />
+            </LinearLayout>
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <CheckBox
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="30dp"
+                    android:text="小三度" />
+                <CheckBox
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="30dp"
+                    android:text="大三度" />
+            </LinearLayout>
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <CheckBox
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="30dp"
+                    android:text="纯四度" />
+                <CheckBox
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="30dp"
+                    android:text="增四/减五度" />
+            </LinearLayout>
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <CheckBox
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="30dp"
+                    android:text="纯五度" />
+                <CheckBox
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="30dp"
+                    android:text="小六度" />
+            </LinearLayout>
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <CheckBox
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="30dp"
+                    android:text="大六度" />
+                <CheckBox
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="30dp"
+                    android:text="小七度" />
+            </LinearLayout>
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <CheckBox
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="30dp"
+                    android:text="大七度" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
-</ScrollView>
+
+    <LinearLayout
+        android:background="@drawable/bg_option"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="15dp"
+        android:padding="10dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="设置和弦叠加音个数"/>
+        <EditText
+            android:id="@+id/et_num_notes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="叠加音个数"
+            android:inputType="number" />
+    </LinearLayout>
+
+
+</LinearLayout>

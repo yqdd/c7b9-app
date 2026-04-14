@@ -31,11 +31,13 @@ public class LeaderboardActivity extends AppCompatActivity
         List<UserStats> userStatsList = getUserStats();
 
 
+        /*
         LineChart chart = findViewById(R.id.board_speed);
 
         LineData data = new LineData();
         data.addDataSet(new LineDataSet(List.of(new Entry(0, 0), new Entry(100, 100)), "测试"));
         chart.setData(data);
+         */
 
 
 

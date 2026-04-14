@@ -17,11 +17,6 @@
 
     </FrameLayout>
 
-    <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/board_speed"
-            android:layout_width="match_parent"
-            android:layout_height="200dp" />
-
     <ListView
             android:id="@+id/leaderboard_list"
             android:layout_width="match_parent"

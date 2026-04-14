@@ -27,7 +27,6 @@ import com.ow0b.c7b9.app.activity.leaderboard.LeaderboardActivity;
 import com.ow0b.c7b9.app.activity.metronome.MetronomeActivity;
 import com.ow0b.c7b9.app.activity.piano.MidiPlayer;
 import com.ow0b.c7b9.app.activity.piano.PianoToolActivity;
-import com.ow0b.c7b9.app.activity.practise.PractiseActivity;
 import com.ow0b.c7b9.app.activity.rhythm.RhythmActivity;
 import com.ow0b.c7b9.app.databinding.ActivityMainBinding;
 import com.ow0b.c7b9.app.util.ApiCallback;
@@ -36,18 +35,12 @@ import com.ow0b.c7b9.app.util.Toast;
 import com.ow0b.c7b9.app.util.midi.Midi;
 import com.ow0b.c7b9.app.activity.main.chat.ChatContextView;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.List;
 
 import okhttp3.Call;
 
@@ -64,12 +57,11 @@ public class MainActivity extends AppCompatActivity
     public ScrollView chatDisplayScroll;
     ImageButton sendButton;
     private ImageButton recordAudioButton;
-    private MaterialButton audioLLMButton, midiAnalyzeButton;
     private Button toolSelectionButton, drawerButton;
     public Button newChatButton;
     public UploadResourceListView uploadResources;
     public DrawerLayout drawerLayout;
-    public boolean audioLLMModel, isMidiOn = false;
+    public boolean isThinkingOn = true, isMidiOn = true;
     public boolean isNewChat = false;       //这个用来减少打开Fragment需要的网络请求
     public int chatContextId = -1;
     boolean isGenerating = false;
@@ -108,8 +100,6 @@ public class MainActivity extends AppCompatActivity
         sendButton = findViewById(R.id.send_button);
         recordAudioButton = findViewById(R.id.record_audio_button);
         uploadResources = findViewById(R.id.upload_bar);
-        audioLLMButton = findViewById(R.id.audio_llm_button);
-        midiAnalyzeButton = findViewById(R.id.midi_analyze_button);
         toolSelectionButton = findViewById(R.id.tool_selection_button);
         drawerButton = findViewById(R.id.drawer_button);
         newChatButton = findViewById(R.id.new_chat_button);
@@ -136,13 +126,11 @@ public class MainActivity extends AppCompatActivity
         binding.fragmentDrawerToolMetronome.setOnClickListener(v ->
                 startActivity(new Intent(this, MetronomeActivity.class)));
         binding.fragmentDrawerToolChord.setOnClickListener(v ->
-                Toast.showInfo(this, "没做好"));          //startActivity(new Intent(this, ChordComposeActivity.class))
+                startActivity(new Intent(this, ChordComposeActivity.class)));
         binding.fragmentDrawerToolRhythm.setOnClickListener(v ->
-                Toast.showInfo(this, "没做好"));          //startActivity(new Intent(this, RhythmActivity.class))
-        binding.fragmentDrawerToolPractise.setOnClickListener(v ->
-                Toast.showInfo(this, "没做好"));          //startActivity(new Intent(this, PractiseActivity.class))
+                startActivity(new Intent(this, RhythmActivity.class)));
         binding.fragmentDrawerToolLeaderboard.setOnClickListener(v ->
-                Toast.showInfo(this, "没做好"));          //startActivity(new Intent(this, LeaderboardActivity.class))
+                startActivity(new Intent(this, LeaderboardActivity.class)));
 
 
         chatDisplayScroll.setVerticalScrollBarEnabled(false);
@@ -169,7 +157,6 @@ public class MainActivity extends AppCompatActivity
                     binding.toolScroll.setVisibility(View.GONE);
                     newChatButton.setVisibility(View.VISIBLE);
                     userInput.setText("");
-
                     ChatContextView promptView = new ChatContextView(this);
 
                     chatDisplay.addView(promptView);
@@ -194,7 +181,7 @@ public class MainActivity extends AppCompatActivity
                         }});
                          */
                         promptView.newUserText().setText(text);
-                        ChatUtils.sendMessageToAI(this, promptView, text, chatContextId, null);
+                        ChatUtils.sendMessageToAI(this, promptView, isThinkingOn, isMidiOn, text, chatContextId, null);
                     }
                     else
                     {
@@ -209,7 +196,7 @@ public class MainActivity extends AppCompatActivity
                                 //int id = obj.get("id").getAsInt();
                                 //recordView.setId(id);
                                 promptView.newUserText().setText(text);
-                                ChatUtils.sendMessageToAI(this, promptView, text, chatContextId, aids);
+                                ChatUtils.sendMessageToAI(this, promptView, isThinkingOn, isMidiOn, text, chatContextId, aids);
                             });
                         });
                         //uploadResources.setVisibility(View.GONE);
@@ -237,19 +224,18 @@ public class MainActivity extends AppCompatActivity
                 recordAudioButton.setImageResource(R.drawable.btn_record_stop);
             }
         });
-        updateSwitchButtonState(audioLLMButton, audioLLMModel);
-        audioLLMButton.setOnClickListener(v ->
+        updateSwitchButtonState(binding.thinkButton, isThinkingOn);
+        binding.thinkButton.setOnClickListener(v ->
         {
-            audioLLMModel = !audioLLMModel;
-            updateSwitchButtonState(audioLLMButton, audioLLMModel);
+            isThinkingOn = !isThinkingOn;
+            updateSwitchButtonState(binding.thinkButton, isThinkingOn);
         });
-        updateSwitchButtonState(midiAnalyzeButton, isMidiOn);
-        midiAnalyzeButton.setOnClickListener(v ->
+        updateSwitchButtonState(binding.midiMatchButton, isMidiOn);
+        binding.midiMatchButton.setOnClickListener(v ->
         {
             isMidiOn = !isMidiOn;
-            updateSwitchButtonState(midiAnalyzeButton, isMidiOn);
+            updateSwitchButtonState(binding.midiMatchButton, isMidiOn);
         });
-
         toolSelectionButton.setOnClickListener(v ->
         {
             Intent intent = new Intent(MainActivity.this, PianoToolActivity.class);

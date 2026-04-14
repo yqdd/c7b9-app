@@ -1,8 +1,19 @@
 package com.ow0b.c7b9.app.activity.chord;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+
+import com.google.android.material.internal.TextWatcherAdapter;
+import com.ow0b.c7b9.app.activity.rhythm.RhythmActivity;
 import com.ow0b.c7b9.app.databinding.ActivityToolChordSettingBinding;
 import com.ow0b.c7b9.app.util.Toast;
 
@@ -10,6 +21,7 @@ public class ChordSettingActivity extends Activity
 {
     private ActivityToolChordSettingBinding binding;
 
+    @SuppressLint("RestrictedApi")
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -17,49 +29,60 @@ public class ChordSettingActivity extends Activity
         binding = ActivityToolChordSettingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // 加载已保存的设置
-        SharedPreferences prefs = getSharedPreferences(ChordUtil.PREFS_NAME, MODE_PRIVATE);
-        String intervalsStr = prefs.getString(ChordUtil.KEY_ALLOWED_INTERVALS, "大小三度,减增三度,倍增减三度,大小二度,纯四度");
-        int numNotes = prefs.getInt(ChordUtil.KEY_NUM_NOTES, ChordUtil.DEFAULT_NUM_NOTES);
-        binding.etNumNotes.setText(String.valueOf(numNotes));
-
-        // 根据保存的 interval 字符串设置复选框状态
-        binding.checkboxDaxiaosan.setChecked(intervalsStr.contains("大小三度"));
-        binding.checkboxJianzengsan.setChecked(intervalsStr.contains("减增三度"));
-        binding.checkboxBeizengjiansan.setChecked(intervalsStr.contains("倍增减三度"));
-        binding.checkboxDaxiaoerdu.setChecked(intervalsStr.contains("大小二度"));
-        binding.checkboxChunsidu.setChecked(intervalsStr.contains("纯四度"));
-
-        binding.saveSettingsButton.setOnClickListener(v ->
+        binding.back.setOnClickListener(v -> finish());
+        binding.etNumNotes.setText(String.valueOf(ChordUtil.numNotes));
+        binding.etNumNotes.addTextChangedListener(new TextWatcherAdapter()
         {
-            StringBuilder sb = new StringBuilder();
-            if (binding.checkboxDaxiaosan.isChecked()) sb.append("大小三度,");
-            if (binding.checkboxJianzengsan.isChecked()) sb.append("减增三度,");
-            if (binding.checkboxBeizengjiansan.isChecked()) sb.append("倍增减三度,");
-            if (binding.checkboxDaxiaoerdu.isChecked()) sb.append("大小二度,");
-            if (binding.checkboxChunsidu.isChecked()) sb.append("纯四度,");
-
-            String intervals = sb.toString();
-            if (intervals.endsWith(","))
+            @Override
+            public void afterTextChanged(Editable s)
             {
-                intervals = intervals.substring(0, intervals.length()-1);
+                try { ChordUtil.numNotes = Integer.parseInt(binding.etNumNotes.getText().toString()); }
+                catch (NumberFormatException ignore) {}
             }
-            int numNotes1;
-            try
-            {
-                numNotes1 = Integer.parseInt(binding.etNumNotes.getText().toString());
-            }
-            catch (NumberFormatException e)
-            {
-                Toast.showInfo(ChordSettingActivity.this,  "Invalid number of notes");
-                return;
-            }
-            SharedPreferences.Editor editor = getSharedPreferences(ChordUtil.PREFS_NAME, MODE_PRIVATE).edit();
-            editor.putString(ChordUtil.KEY_ALLOWED_INTERVALS, intervals);
-            editor.putInt(ChordUtil.KEY_NUM_NOTES, numNotes1);
-            editor.apply();
-            Toast.showInfo(ChordSettingActivity.this,  "Settings Saved");
-            finish();
         });
+        for(int i = 0; i < binding.intervalCheckboxes.getChildCount(); i ++)
+        {
+            if(binding.intervalCheckboxes.getChildAt(i) instanceof ViewGroup vg)
+            {
+                for(int j = 0; j < vg.getChildCount(); j ++)
+                {
+                    if(vg.getChildAt(j) instanceof CheckBox cb)
+                    {
+                        int index = getIntervalSemitones(cb.getText().toString());
+                        cb.setChecked(ChordUtil.allowedInterval[index]);
+                        cb.setOnClickListener(v ->
+                        {
+                            ChordUtil.allowedInterval[index] = !ChordUtil.allowedInterval[index];
+                            cb.setChecked(ChordUtil.allowedInterval[index]);
+                        });
+                    }
+                }
+            }
+        }
+    }
+    private int getIntervalSemitones(String intervalType)
+    {
+        return switch (intervalType)
+        {
+            case "小二度" -> 0;
+            case "大二度" -> 1;
+            case "小三度" -> 2;
+            case "大三度" -> 3;
+            case "纯四度" -> 4;
+            case "增四/减五度" -> 5;
+            case "纯五度" -> 6;
+            case "小六度" -> 7;
+            case "大六度" -> 8;
+            case "小七度" -> 9;
+            case "大七度" -> 10;
+            case "纯八度" -> 11;
+            default -> throw new RuntimeException(intervalType);
+        };
+    }
+    @Override
+    public void finish()
+    {
+        super.finish();
+        ChordUtil.correctChord.clear();
     }
 }
